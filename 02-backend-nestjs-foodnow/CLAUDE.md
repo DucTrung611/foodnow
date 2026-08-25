@@ -23,3 +23,6 @@
 
 ### Public Exports
 Every feature exports only through `<name>.module.ts` and `<name>.service.ts` — no direct imports between features
+
+## Skills
+- **`testing`** (`.claude/skills/testing/`) — use whenever writing or running tests here. Jest + `@nestjs/testing`; unit specs in `src/features/<feature>/tests/<name>.spec.ts`, e2e in `test/<name>.e2e-spec.ts`. Service tests mock the repository, controller tests mock the service — never mock `PrismaService` directly inside a service test.

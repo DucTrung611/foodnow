@@ -19,4 +19,13 @@ export default defineConfig([
       globals: globals.browser,
     },
   },
+  {
+    // Test-support files (custom render, msw setup) and test files themselves
+    // legitimately mix components with plain helper exports — fast refresh
+    // doesn't apply outside the dev server.
+    files: ['src/test/**/*.{ts,tsx}', '**/*.test.{ts,tsx}'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
 ])

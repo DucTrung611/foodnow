@@ -28,3 +28,4 @@ Always via `index.ts` file (barrel export)
 
 ## Skills
 - **`frontend-design`** (`.claude/skills/frontend-design/`) — use for any new page/screen or visual redesign in this app. Pushes toward a distinctive palette, type pairing, and layout for the actual subject (food ordering, live tracking) instead of generic AI-template defaults. Apply before building UI, not after.
+- **`testing`** (`.claude/skills/testing/`) — use whenever writing or running tests here. Vitest + React Testing Library + MSW; tests are co-located (`Component.test.tsx`, `useHook.test.ts`); shared setup/mocks/render helpers live in `src/test/`. Mock at the HTTP layer with MSW, never mock axios or a feature's own service/hook directly.

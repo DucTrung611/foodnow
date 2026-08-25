@@ -23,6 +23,7 @@ A food delivery platform. Customers browse nearby restaurants (geo search), buil
 Custom skills in `.claude/skills/` — use them proactively when the task matches, don't wait to be asked by name:
 - **`github-push`** — staging, commit message, and safe push flow to GitHub. Use whenever asked to push/commit changes, or to set up a new repo remote. Never `git push` without showing the change summary and getting explicit confirmation first (see the skill for the full flow).
 - **`frontend-design`** — distinctive visual/UX direction for new or reshaped UI. Use for any work in `01-frontend-reactjs-foodnow` that involves layout, typography, color, or a new page/screen — avoid generic templated-looking defaults.
+- **`testing`** — this repo's actual testing setup and conventions (Vitest + RTL + MSW on the frontend, Jest + `@nestjs/testing` on the backend). Use whenever asked to write or run tests, add coverage, or check whether a change is adequately tested — don't invent a testing approach from scratch.
 
 ## Important
 - Follow existing patterns in codebase

@@ -117,10 +117,12 @@ if (isLoading) return <OrderCardSkeleton count={3} />;
 
 ## 8. Testing
 
-- **Location:** co-located — `components/OrderCard.test.tsx`, `hooks/useOrders.test.ts`
-- **What to test:** user-visible behavior (React Testing Library), hook state transitions, form validation rules, error-code → message mapping. Mock at the **service** layer (MSW), never mock axios directly.
+- **Runner:** Vitest (`npm test` / `npm run test:watch` / `npm run test:coverage`), configured in `vite.config.ts`'s `test` block — jsdom environment, setup file at `src/test/setup.ts`.
+- **Location:** co-located — `components/OrderCard.test.tsx`, `hooks/useOrders.test.ts`.
+- **Shared test infra** (`src/test/`, not a feature): `setup.ts` (jest-dom matchers, MSW server lifecycle, `matchMedia` stub), `msw/handlers.ts` + `msw/server.ts` (baseline MSW handlers), `render.tsx` (`renderWithProviders`/`renderHookWithProviders` — wraps in `QueryClientProvider` + `MemoryRouter`, retries off).
+- **What to test:** user-visible behavior (React Testing Library), hook state transitions, form validation rules, error-code → message mapping. Mock at the **service** layer (MSW — intercept the HTTP call, let the real service/hook code run), never mock axios or a feature's hooks directly.
 - **Don't test:** Tailwind classes, implementation details, third-party library internals.
-- **Coverage focus:** cart/price calculation, order status transitions, and payment flows require explicit test cases. Presentational components are smoke-tested only.
+- **Coverage focus:** cart/price calculation, order status transitions, and payment flows require explicit test cases. Presentational components are smoke-tested only. See `features/orders/utils/cart-math.test.ts`, `features/orders/utils/order-status.test.ts`, and `features/auth/hooks/useAuth.test.tsx` for reference examples of each level (pure util, pure util, MSW-backed hook).
 
 ## React 19-Specific Additions
 
