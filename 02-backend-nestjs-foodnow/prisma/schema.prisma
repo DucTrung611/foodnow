@@ -1,0 +1,484 @@
+generator client {
+  provider        = "prisma-client"
+  output          = "../src/generated/prisma"
+  moduleFormat    = "cjs"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  extensions = [postgis]
+}
+
+// ─── Enums ──────────────────────────────────────────────────────────────
+
+enum Role {
+  CUSTOMER
+  VENDOR
+  DRIVER
+  ADMIN
+}
+
+enum UserStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+}
+
+enum RestaurantStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PREPARING
+  READY_FOR_PICKUP
+  ON_THE_WAY
+  DELIVERED
+  CANCELLED
+}
+
+enum DeliveryStatus {
+  ASSIGNED
+  PICKED_UP
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CARD
+  CASH
+  WALLET
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum PaymentTransactionType {
+  CHARGE
+  REFUND
+}
+
+enum PaymentTransactionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+enum PromotionDiscountType {
+  PERCENTAGE
+  FIXED_AMOUNT
+}
+
+enum DriverEarningStatus {
+  PENDING
+  PAID
+}
+
+// ─── User Management ────────────────────────────────────────────────────
+
+model User {
+  id           String     @id @default(uuid()) @db.Uuid
+  email        String     @unique(map: "uq_users_email")
+  phone        String     @unique(map: "uq_users_phone")
+  passwordHash String     @map("password_hash")
+  role         Role
+  fullName     String     @map("full_name")
+  avatarUrl    String?    @map("avatar_url")
+  status       UserStatus @default(ACTIVE)
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  addresses          Address[]
+  restaurants        Restaurant[]
+  ordersAsCustomer   Order[]              @relation("CustomerOrders")
+  ordersAsDriver     Order[]              @relation("DriverOrders")
+  orderStatusChanges OrderStatusHistory[]
+  deliveries         Delivery[]
+  driverLocations    DriverLocation[]
+  carts              Cart[]
+  reviewsAsCustomer  Review[]             @relation("CustomerReviews")
+  reviewsAsDriver    Review[]             @relation("DriverReviews")
+  promotionUsages    PromotionUsage[]
+  driverEarnings     DriverEarning[]
+
+  @@map("users")
+}
+
+model Address {
+  id            String                               @id @default(uuid()) @db.Uuid
+  userId        String                               @map("user_id") @db.Uuid
+  label         String
+  streetAddress String                               @map("street_address")
+  location      Unsupported("geography(Point,4326)")
+  isDefault     Boolean                              @default(false) @map("is_default")
+  createdAt     DateTime                             @default(now()) @map("created_at")
+  updatedAt     DateTime                             @updatedAt @map("updated_at")
+
+  user   User    @relation(fields: [userId], references: [id])
+  orders Order[]
+
+  @@index([userId], map: "idx_addresses_user")
+  @@map("addresses")
+}
+
+// ─── Restaurant & Menu ───────────────────────────────────────────────────
+
+model Restaurant {
+  id           String                               @id @default(uuid()) @db.Uuid
+  ownerId      String                               @map("owner_id") @db.Uuid
+  name         String
+  description  String?
+  location     Unsupported("geography(Point,4326)")
+  openingHours Json                                 @map("opening_hours")
+  status       RestaurantStatus                     @default(PENDING)
+  avgRating    Decimal                              @default(0) @map("avg_rating") @db.Decimal(3, 2)
+  version      Int                                  @default(0)
+  createdAt    DateTime                             @default(now()) @map("created_at")
+  updatedAt    DateTime                             @updatedAt @map("updated_at")
+
+  owner      User        @relation(fields: [ownerId], references: [id])
+  categories Category[]
+  menuItems  MenuItem[]
+  orders     Order[]
+  carts      Cart[]
+  reviews    Review[]
+  promotions Promotion[]
+
+  @@index([ownerId], map: "idx_restaurants_owner")
+  @@map("restaurants")
+}
+
+model Category {
+  id           String   @id @default(uuid()) @db.Uuid
+  restaurantId String   @map("restaurant_id") @db.Uuid
+  name         String
+  sortOrder    Int      @map("sort_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id])
+  menuItems  MenuItem[]
+
+  @@index([restaurantId], map: "idx_categories_restaurant")
+  @@map("categories")
+}
+
+model MenuItem {
+  id           String   @id @default(uuid()) @db.Uuid
+  restaurantId String   @map("restaurant_id") @db.Uuid
+  categoryId   String   @map("category_id") @db.Uuid
+  name         String
+  basePrice    Decimal  @map("base_price") @db.Decimal(10, 2)
+  isAvailable  Boolean  @default(true) @map("is_available")
+  version      Int      @default(0)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  restaurant   Restaurant            @relation(fields: [restaurantId], references: [id])
+  category     Category              @relation(fields: [categoryId], references: [id])
+  optionGroups MenuItemOptionGroup[]
+  cartItems    CartItem[]
+  orderItems   OrderItem[]
+
+  @@index([restaurantId], map: "idx_menu_items_restaurant")
+  @@index([categoryId], map: "idx_menu_items_category")
+  @@map("menu_items")
+}
+
+model MenuItemOptionGroup {
+  id         String   @id @default(uuid()) @db.Uuid
+  menuItemId String   @map("menu_item_id") @db.Uuid
+  name       String
+  isRequired Boolean  @map("is_required")
+  minSelect  Int      @map("min_select")
+  maxSelect  Int      @map("max_select")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  menuItem MenuItem         @relation(fields: [menuItemId], references: [id])
+  options  MenuItemOption[]
+
+  @@index([menuItemId], map: "idx_option_groups_menu_item")
+  @@map("menu_item_option_groups")
+}
+
+model MenuItemOption {
+  id            String   @id @default(uuid()) @db.Uuid
+  optionGroupId String   @map("option_group_id") @db.Uuid
+  name          String
+  extraPrice    Decimal  @map("extra_price") @db.Decimal(10, 2)
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  optionGroup MenuItemOptionGroup @relation(fields: [optionGroupId], references: [id])
+
+  @@index([optionGroupId], map: "idx_options_group")
+  @@map("menu_item_options")
+}
+
+// ─── Cart & Ordering ─────────────────────────────────────────────────────
+
+model Cart {
+  id           String   @id @default(uuid()) @db.Uuid
+  customerId   String   @map("customer_id") @db.Uuid
+  restaurantId String   @map("restaurant_id") @db.Uuid
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  customer   User       @relation(fields: [customerId], references: [id])
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id])
+  items      CartItem[]
+
+  @@unique([customerId], map: "uq_carts_customer")
+  @@map("carts")
+}
+
+model CartItem {
+  id              String   @id @default(uuid()) @db.Uuid
+  cartId          String   @map("cart_id") @db.Uuid
+  menuItemId      String   @map("menu_item_id") @db.Uuid
+  quantity        Int
+  selectedOptions Json     @map("selected_options")
+  note            String?
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  cart     Cart     @relation(fields: [cartId], references: [id])
+  menuItem MenuItem @relation(fields: [menuItemId], references: [id])
+
+  @@index([cartId], map: "idx_cart_items_cart")
+  @@map("cart_items")
+}
+
+model Order {
+  id                String      @id @default(uuid()) @db.Uuid
+  orderCode         String      @unique(map: "uq_orders_order_code") @map("order_code")
+  customerId        String      @map("customer_id") @db.Uuid
+  restaurantId      String      @map("restaurant_id") @db.Uuid
+  driverId          String?     @map("driver_id") @db.Uuid
+  deliveryAddressId String      @map("delivery_address_id") @db.Uuid
+  status            OrderStatus @default(PENDING)
+  subtotal          Decimal     @db.Decimal(10, 2)
+  deliveryFee       Decimal     @map("delivery_fee") @db.Decimal(10, 2)
+  discountAmount    Decimal     @default(0) @map("discount_amount") @db.Decimal(10, 2)
+  totalAmount       Decimal     @map("total_amount") @db.Decimal(10, 2)
+  version           Int         @default(0)
+  placedAt          DateTime    @default(now()) @map("placed_at")
+  updatedAt         DateTime    @updatedAt @map("updated_at")
+
+  customer        User                 @relation("CustomerOrders", fields: [customerId], references: [id])
+  restaurant      Restaurant           @relation(fields: [restaurantId], references: [id])
+  driver          User?                @relation("DriverOrders", fields: [driverId], references: [id])
+  deliveryAddress Address              @relation(fields: [deliveryAddressId], references: [id])
+  items           OrderItem[]
+  statusHistory   OrderStatusHistory[]
+  delivery        Delivery?
+  payment         Payment?
+  review          Review?
+  promotionUsages PromotionUsage[]
+
+  @@index([customerId], map: "idx_orders_customer")
+  @@index([restaurantId], map: "idx_orders_restaurant")
+  @@index([driverId], map: "idx_orders_driver")
+  @@index([status], map: "idx_orders_status")
+  @@map("orders")
+}
+
+model OrderItem {
+  id                String   @id @default(uuid()) @db.Uuid
+  orderId           String   @map("order_id") @db.Uuid
+  menuItemId        String   @map("menu_item_id") @db.Uuid
+  itemNameSnapshot  String   @map("item_name_snapshot")
+  itemPriceSnapshot Decimal  @map("item_price_snapshot") @db.Decimal(10, 2)
+  quantity          Int
+  subtotal          Decimal  @db.Decimal(10, 2)
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  order    Order             @relation(fields: [orderId], references: [id])
+  menuItem MenuItem          @relation(fields: [menuItemId], references: [id])
+  options  OrderItemOption[]
+
+  @@index([orderId], map: "idx_order_items_order")
+  @@map("order_items")
+}
+
+model OrderItemOption {
+  id                  String   @id @default(uuid()) @db.Uuid
+  orderItemId         String   @map("order_item_id") @db.Uuid
+  optionNameSnapshot  String   @map("option_name_snapshot")
+  optionPriceSnapshot Decimal  @map("option_price_snapshot") @db.Decimal(10, 2)
+  createdAt           DateTime @default(now()) @map("created_at")
+
+  orderItem OrderItem @relation(fields: [orderItemId], references: [id])
+
+  @@index([orderItemId], map: "idx_order_item_options_item")
+  @@map("order_item_options")
+}
+
+model OrderStatusHistory {
+  id        String      @id @default(uuid()) @db.Uuid
+  orderId   String      @map("order_id") @db.Uuid
+  status    OrderStatus
+  changedBy String?     @map("changed_by") @db.Uuid
+  note      String?
+  createdAt DateTime    @default(now()) @map("created_at")
+
+  order         Order @relation(fields: [orderId], references: [id])
+  changedByUser User? @relation(fields: [changedBy], references: [id])
+
+  @@index([orderId], map: "idx_status_history_order")
+  @@map("order_status_history")
+}
+
+// ─── Delivery ────────────────────────────────────────────────────────────
+
+model Delivery {
+  id                  String         @id @default(uuid()) @db.Uuid
+  orderId             String         @map("order_id") @db.Uuid
+  driverId            String         @map("driver_id") @db.Uuid
+  pickupTime          DateTime?      @map("pickup_time")
+  deliveryTime        DateTime?      @map("delivery_time")
+  estimatedDistanceKm Decimal        @map("estimated_distance_km") @db.Decimal(6, 2)
+  status              DeliveryStatus @default(ASSIGNED)
+  createdAt           DateTime       @default(now()) @map("created_at")
+  updatedAt           DateTime       @updatedAt @map("updated_at")
+
+  order     Order            @relation(fields: [orderId], references: [id])
+  driver    User             @relation(fields: [driverId], references: [id])
+  locations DriverLocation[]
+  earnings  DriverEarning[]
+
+  @@unique([orderId], map: "uq_deliveries_order")
+  @@index([driverId], map: "idx_deliveries_driver")
+  @@map("deliveries")
+}
+
+model DriverLocation {
+  id         String                               @id @default(uuid()) @db.Uuid
+  driverId   String                               @map("driver_id") @db.Uuid
+  orderId    String?                              @map("order_id") @db.Uuid
+  location   Unsupported("geography(Point,4326)")
+  recordedAt DateTime                             @default(now()) @map("recorded_at")
+
+  driver User      @relation(fields: [driverId], references: [id])
+  order  Delivery? @relation(fields: [orderId], references: [id])
+
+  @@index([driverId], map: "idx_driver_locations_driver")
+  @@index([orderId], map: "idx_driver_locations_order")
+  @@map("driver_locations")
+}
+
+// ─── Reviews ─────────────────────────────────────────────────────────────
+
+model Review {
+  id           String   @id @default(uuid()) @db.Uuid
+  orderId      String   @unique(map: "uq_reviews_order") @map("order_id") @db.Uuid
+  customerId   String   @map("customer_id") @db.Uuid
+  restaurantId String?  @map("restaurant_id") @db.Uuid
+  driverId     String?  @map("driver_id") @db.Uuid
+  rating       Int
+  comment      String?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  order      Order       @relation(fields: [orderId], references: [id])
+  customer   User        @relation("CustomerReviews", fields: [customerId], references: [id])
+  restaurant Restaurant? @relation(fields: [restaurantId], references: [id])
+  driver     User?       @relation("DriverReviews", fields: [driverId], references: [id])
+
+  @@index([restaurantId], map: "idx_reviews_restaurant")
+  @@map("reviews")
+}
+
+// ─── Payments ────────────────────────────────────────────────────────────
+
+model Payment {
+  id        String        @id @default(uuid()) @db.Uuid
+  orderId   String        @unique(map: "uq_payments_order") @map("order_id") @db.Uuid
+  amount    Decimal       @db.Decimal(10, 2)
+  method    PaymentMethod
+  status    PaymentStatus @default(PENDING)
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+
+  order        Order                @relation(fields: [orderId], references: [id])
+  transactions PaymentTransaction[]
+
+  @@map("payments")
+}
+
+model PaymentTransaction {
+  id                    String                   @id @default(uuid()) @db.Uuid
+  paymentId             String                   @map("payment_id") @db.Uuid
+  idempotencyKey        String                   @unique(map: "uq_payment_tx_idempotency_key") @map("idempotency_key")
+  providerTransactionId String?                  @map("provider_transaction_id")
+  type                  PaymentTransactionType
+  status                PaymentTransactionStatus @default(PENDING)
+  rawResponse           Json?                    @map("raw_response")
+  createdAt             DateTime                 @default(now()) @map("created_at")
+
+  payment Payment @relation(fields: [paymentId], references: [id])
+
+  @@map("payment_transactions")
+}
+
+// ─── Promotions ──────────────────────────────────────────────────────────
+
+model Promotion {
+  id                String                @id @default(uuid()) @db.Uuid
+  code              String                @unique(map: "uq_promotions_code")
+  restaurantId      String?               @map("restaurant_id") @db.Uuid
+  discountType      PromotionDiscountType @map("discount_type")
+  discountValue     Decimal               @map("discount_value") @db.Decimal(10, 2)
+  minOrderAmount    Decimal?              @map("min_order_amount") @db.Decimal(10, 2)
+  maxDiscountAmount Decimal?              @map("max_discount_amount") @db.Decimal(10, 2)
+  usageLimit        Int?                  @map("usage_limit")
+  usageLimitPerUser Int?                  @map("usage_limit_per_user")
+  startsAt          DateTime              @map("starts_at")
+  endsAt            DateTime              @map("ends_at")
+  isActive          Boolean               @default(true) @map("is_active")
+  createdAt         DateTime              @default(now()) @map("created_at")
+
+  restaurant Restaurant?      @relation(fields: [restaurantId], references: [id])
+  usages     PromotionUsage[]
+
+  @@map("promotions")
+}
+
+model PromotionUsage {
+  id              String   @id @default(uuid()) @db.Uuid
+  promotionId     String   @map("promotion_id") @db.Uuid
+  customerId      String   @map("customer_id") @db.Uuid
+  orderId         String   @map("order_id") @db.Uuid
+  discountApplied Decimal  @map("discount_applied") @db.Decimal(10, 2)
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  promotion Promotion @relation(fields: [promotionId], references: [id])
+  customer  User      @relation(fields: [customerId], references: [id])
+  order     Order     @relation(fields: [orderId], references: [id])
+
+  @@index([promotionId], map: "idx_promo_usages_promotion")
+  @@index([customerId], map: "idx_promo_usages_customer")
+  @@map("promotion_usages")
+}
+
+// ─── Driver Payouts ──────────────────────────────────────────────────────
+
+model DriverEarning {
+  id         String              @id @default(uuid()) @db.Uuid
+  driverId   String              @map("driver_id") @db.Uuid
+  deliveryId String              @map("delivery_id") @db.Uuid
+  amount     Decimal             @db.Decimal(10, 2)
+  status     DriverEarningStatus @default(PENDING)
+  paidAt     DateTime?           @map("paid_at")
+  createdAt  DateTime            @default(now()) @map("created_at")
+
+  driver   User     @relation(fields: [driverId], references: [id])
+  delivery Delivery @relation(fields: [deliveryId], references: [id])
+
+  @@index([driverId], map: "idx_driver_earnings_driver")
+  @@map("driver_earnings")
+}
