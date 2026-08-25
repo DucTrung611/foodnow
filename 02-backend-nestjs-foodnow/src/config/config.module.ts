@@ -4,13 +4,14 @@ import { envValidationSchema } from './env.validation';
 import appConfig from './app.config';
 import databaseConfig from './database.config';
 import redisConfig from './redis.config';
+import jwtConfig from './jwt.config';
 
 @Module({
   imports: [
     NestConfigModule.forRoot({
       isGlobal: true,
       validationSchema: envValidationSchema,
-      load: [appConfig, databaseConfig, redisConfig],
+      load: [appConfig, databaseConfig, redisConfig, jwtConfig],
     }),
   ],
 })

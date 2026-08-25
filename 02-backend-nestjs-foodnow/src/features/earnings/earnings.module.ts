@@ -1,0 +1,12 @@
+import { Module } from '@nestjs/common';
+import { EarningsController } from './earnings.controller';
+import { EarningsService } from './earnings.service';
+import { EarningsRepository } from './earnings.repository';
+import { EarningsListener } from './earnings.listener';
+
+@Module({
+  controllers: [EarningsController],
+  providers: [EarningsService, EarningsRepository, EarningsListener],
+  exports: [EarningsService],
+})
+export class EarningsModule {}

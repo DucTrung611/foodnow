@@ -25,3 +25,6 @@
 
 ### Public Exports
 Always via `index.ts` file (barrel export)
+
+## Skills
+- **`frontend-design`** (`.claude/skills/frontend-design/`) — use for any new page/screen or visual redesign in this app. Pushes toward a distinctive palette, type pairing, and layout for the actual subject (food ordering, live tracking) instead of generic AI-template defaults. Apply before building UI, not after.
