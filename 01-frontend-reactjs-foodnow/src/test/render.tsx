@@ -9,7 +9,7 @@ import { MemoryRouter } from 'react-router-dom';
  * (most hooks/pages call useNavigate/useParams). Use for anything that isn't
  * a pure presentational component.
  */
-function createTestQueryClient() {
+export function createTestQueryClient() {
   return new QueryClient({
     defaultOptions: {
       queries: { retry: false },
@@ -18,26 +18,46 @@ function createTestQueryClient() {
   });
 }
 
-function AllProviders({ children, initialEntries }: { children: ReactNode; initialEntries?: string[] }) {
+function AllProviders({
+  children,
+  initialEntries,
+  queryClient,
+}: {
+  children: ReactNode;
+  initialEntries?: string[];
+  queryClient: QueryClient;
+}) {
   return (
-    <QueryClientProvider client={createTestQueryClient()}>
+    <QueryClientProvider client={queryClient}>
       <MemoryRouter initialEntries={initialEntries}>{children}</MemoryRouter>
     </QueryClientProvider>
   );
 }
 
-export function renderWithProviders(ui: ReactElement, options?: RenderOptions & { initialEntries?: string[] }) {
-  const { initialEntries, ...renderOptions } = options ?? {};
-  return render(ui, { wrapper: (props) => <AllProviders {...props} initialEntries={initialEntries} />, ...renderOptions });
+type ProviderOptions = { initialEntries?: string[]; queryClient?: QueryClient };
+
+export function renderWithProviders(ui: ReactElement, options?: RenderOptions & ProviderOptions) {
+  const { initialEntries, queryClient = createTestQueryClient(), ...renderOptions } = options ?? {};
+  const result = render(ui, {
+    wrapper: (props) => <AllProviders {...props} initialEntries={initialEntries} queryClient={queryClient} />,
+    ...renderOptions,
+  });
+  return { ...result, queryClient };
 }
 
 export function renderHookWithProviders<TResult, TProps>(
   hook: (props: TProps) => TResult,
-  options?: { initialEntries?: string[] },
+  options?: ProviderOptions,
 ) {
-  return renderHook(hook, {
-    wrapper: ({ children }) => <AllProviders initialEntries={options?.initialEntries}>{children}</AllProviders>,
+  const queryClient = options?.queryClient ?? createTestQueryClient();
+  const result = renderHook(hook, {
+    wrapper: ({ children }) => (
+      <AllProviders initialEntries={options?.initialEntries} queryClient={queryClient}>
+        {children}
+      </AllProviders>
+    ),
   });
+  return { ...result, queryClient };
 }
 
 export { screen, waitFor, within } from '@testing-library/react';
