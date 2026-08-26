@@ -13,4 +13,5 @@ export const envValidationSchema = Joi.object({
   JWT_REFRESH_SECRET: Joi.string().min(16).required(),
   JWT_REFRESH_EXPIRES_IN: Joi.string().default('7d'),
   CORS_ORIGIN: Joi.string().default('http://localhost:5173'),
+  RESTAURANT_DEFAULT_RADIUS_METERS: Joi.number().default(5000),
 });

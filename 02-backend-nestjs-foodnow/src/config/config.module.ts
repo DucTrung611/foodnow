@@ -5,13 +5,20 @@ import appConfig from './app.config';
 import databaseConfig from './database.config';
 import redisConfig from './redis.config';
 import jwtConfig from './jwt.config';
+import restaurantConfig from './restaurant.config';
 
 @Module({
   imports: [
     NestConfigModule.forRoot({
       isGlobal: true,
       validationSchema: envValidationSchema,
-      load: [appConfig, databaseConfig, redisConfig, jwtConfig],
+      load: [
+        appConfig,
+        databaseConfig,
+        redisConfig,
+        jwtConfig,
+        restaurantConfig,
+      ],
     }),
   ],
 })
