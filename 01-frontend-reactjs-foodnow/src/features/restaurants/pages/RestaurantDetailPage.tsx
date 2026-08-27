@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom';
 import { Badge, Skeleton } from '@/shared/components/ui';
-import { formatMoney } from '@/shared/utils/money';
+import { MenuItemRow } from '../components/MenuItemRow';
 import { useRestaurant, useRestaurantMenu } from '../hooks/useRestaurant';
 
 export function RestaurantDetailPage() {
@@ -34,10 +34,7 @@ export function RestaurantDetailPage() {
             <h2 className="font-display text-lg font-bold text-ink">{category.name}</h2>
             <div className="mt-3 flex flex-col divide-y divide-muted-border">
               {category.items.map((item) => (
-                <div key={item.id} className="flex items-center justify-between py-3">
-                  <span className="text-sm text-ink">{item.name}</span>
-                  <span className="font-mono text-sm text-muted">{formatMoney(item.basePrice)}</span>
-                </div>
+                <MenuItemRow key={item.id} item={item} />
               ))}
             </div>
           </section>

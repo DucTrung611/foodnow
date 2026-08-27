@@ -25,6 +25,12 @@ succeeded before the server confirms it:
 - `useOrderStatusSocket` only ever writes `order:status_changed` payloads into the cache — it doesn't
   infer status from other events.
 
+## Cart mutation errors
+`useAddCartItem` (in `useCart.ts`) toasts `mapErrorCode(error.code)` on failure — e.g. `CART_3001` when
+the cart already holds items from a different restaurant. This is the entry point `restaurants`'
+`MenuItemRow` calls via the barrel export; the other cart mutations (`useUpdateCartItem`,
+`useRemoveCartItem`, `useClearCart`) don't have this yet since nothing surfaced a failure path for them.
+
 ## Cart architecture note
 `stores/cart.store.ts` (Zustand) holds **only** client-local checkout draft state (current checkout
 step, the promo-code input box) — the actual cart items are server state fetched via `useCart()`
