@@ -445,6 +445,46 @@ describe('RestaurantsService', () => {
     });
   });
 
+  describe('getMenuItemById', () => {
+    it('throws NotFoundException when the item does not exist', async () => {
+      repository.findMenuItemById.mockResolvedValue(null);
+
+      await expect(service.getMenuItemById('item-1')).rejects.toThrow(
+        'Menu item not found',
+      );
+    });
+
+    it('resolves without needing a restaurantId up front (used by cart/order cross-feature lookups)', async () => {
+      repository.findMenuItemById.mockResolvedValue({
+        id: 'item-1',
+        restaurantId: 'restaurant-1',
+        categoryId: 'cat-1',
+        name: 'Pho Bo',
+        basePrice: '45000.00' as never,
+        isAvailable: true,
+        version: 0,
+        createdAt: new Date('2026-01-01'),
+        updatedAt: new Date('2026-01-01'),
+        restaurant: { id: 'restaurant-1', ownerId: 'owner-1' } as never,
+        optionGroups: [],
+      });
+
+      const result = await service.getMenuItemById('item-1');
+
+      expect(repository.findMenuItemById).toHaveBeenCalledWith('item-1');
+      expect(result).toEqual({
+        id: 'item-1',
+        restaurantId: 'restaurant-1',
+        categoryId: 'cat-1',
+        name: 'Pho Bo',
+        basePrice: '45000.00',
+        isAvailable: true,
+        optionGroups: [],
+        version: 0,
+      });
+    });
+  });
+
   describe('updateMenuItem / deleteMenuItem', () => {
     function makeItemWithRestaurant(ownerId: string): MenuItemWithRestaurant {
       return {
@@ -458,6 +498,7 @@ describe('RestaurantsService', () => {
         createdAt: new Date('2026-01-01'),
         updatedAt: new Date('2026-01-01'),
         restaurant: makeRestaurantRowAsPrisma(ownerId),
+        optionGroups: [],
       };
     }
 

@@ -60,7 +60,10 @@ export type CategoryWithMenu = Prisma.CategoryGetPayload<{
 }>;
 
 export type MenuItemWithRestaurant = Prisma.MenuItemGetPayload<{
-  include: { restaurant: true };
+  include: {
+    restaurant: true;
+    optionGroups: { include: { options: true } };
+  };
 }>;
 
 export type MenuItemWithOptions = Prisma.MenuItemGetPayload<{
@@ -214,7 +217,10 @@ export class RestaurantsRepository {
   findMenuItemById(id: string): Promise<MenuItemWithRestaurant | null> {
     return this.prisma.menuItem.findUnique({
       where: { id },
-      include: { restaurant: true },
+      include: {
+        restaurant: true,
+        optionGroups: { include: { options: true } },
+      },
     });
   }
 

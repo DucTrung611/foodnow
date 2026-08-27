@@ -55,6 +55,15 @@ export class UsersService {
     return rows.map(toAddressResponseDto);
   }
 
+  async getAddressById(
+    userId: string,
+    addressId: string,
+  ): Promise<AddressResponseDto> {
+    const row = await this.usersRepository.findAddressById(addressId, userId);
+    if (!row) throw new NotFoundException('Address not found');
+    return toAddressResponseDto(row);
+  }
+
   async createAddress(
     userId: string,
     dto: CreateAddressDto,

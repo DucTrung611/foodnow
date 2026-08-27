@@ -115,6 +115,45 @@ describe('UsersService', () => {
     });
   });
 
+  describe('getAddressById', () => {
+    it('throws NotFoundException when the address does not belong to the user', async () => {
+      usersRepository.findAddressById.mockResolvedValue(null);
+
+      await expect(
+        usersService.getAddressById('user-1', 'addr-1'),
+      ).rejects.toThrow('Address not found');
+      expect(usersRepository.findAddressById).toHaveBeenCalledWith(
+        'addr-1',
+        'user-1',
+      );
+    });
+
+    it('maps the row to a response DTO with lat/lng for the caller', async () => {
+      usersRepository.findAddressById.mockResolvedValue({
+        id: 'addr-1',
+        user_id: 'user-1',
+        label: 'Home',
+        street_address: '123 Main St',
+        is_default: true,
+        created_at: new Date('2026-01-01'),
+        lat: 21.0245,
+        lng: 105.8412,
+      });
+
+      const result = await usersService.getAddressById('user-1', 'addr-1');
+
+      expect(result).toEqual({
+        id: 'addr-1',
+        label: 'Home',
+        streetAddress: '123 Main St',
+        lat: 21.0245,
+        lng: 105.8412,
+        isDefault: true,
+        createdAt: new Date('2026-01-01'),
+      });
+    });
+  });
+
   describe('createAddress', () => {
     const dtoBase = {
       label: 'Home',

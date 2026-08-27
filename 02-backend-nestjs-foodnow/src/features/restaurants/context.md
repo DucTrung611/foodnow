@@ -11,7 +11,7 @@
 Geo search + detail + menu for customers, and restaurant/category/menu-item CRUD for vendors. Implemented in full for everything in `API_SPEC.md`'s Restaurants & Menu section.
 
 ## Public API
-- `RestaurantsService` (exported via `restaurants.module.ts`) — consumed by `orders` for restaurant/menu-item lookups during checkout (via DI, never `RestaurantsRepository` directly).
+- `RestaurantsService` (exported via `restaurants.module.ts`) — consumed by `orders` for restaurant/menu-item lookups during checkout (via DI, never `RestaurantsRepository` directly). `getById(id)` and `getMenu(restaurantId)` resolve order-creation line items against the in-memory menu tree; `getMenuItemById(id)` (no restaurant context needed) resolves cart mutations, which only receive a bare `menuItemId` from the client.
 
 ## Routes
 - `GET /restaurants` — Public. Geo search via PostGIS `ST_DWithin`/`ST_Distance`. `lat`/`lng` are **required** query params (no default) — a missing value fails `RestaurantSearchQueryDto` validation and the global pipe/filter auto-resolve it to `COMMON_9000`, matching the spec's "Missing lat/lng → COMMON_9000" without any manual check. `radius` defaults to `restaurant.defaultSearchRadiusMeters` (env `RESTAURANT_DEFAULT_RADIUS_METERS`, default 5000m). `status` defaults to `ACTIVE`. `sort` supports `distance` (default), `-avgRating`/`avgRating`, `-createdAt`/`createdAt`.

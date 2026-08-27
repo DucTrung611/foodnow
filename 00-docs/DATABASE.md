@@ -43,7 +43,7 @@
 | carts | id (PK), customer_id (FK→users), restaurant_id (FK) | uq_carts_customer |
 | cart_items | id (PK), cart_id (FK), menu_item_id (FK), quantity, selected_options (jsonb), note | idx_cart_items_cart |
 | orders | id (PK), order_code (unique), customer_id (FK), restaurant_id (FK), driver_id (FK, nullable), delivery_address_id (FK), status (enum), subtotal/delivery_fee/discount_amount/total_amount (decimal, snapshot), version (int), placed_at | idx_orders_customer, idx_orders_restaurant, idx_orders_driver, idx_orders_status |
-| order_items | id (PK), order_id (FK), menu_item_id (FK), item_name_snapshot, item_price_snapshot (decimal), quantity, subtotal | idx_order_items_order |
+| order_items | id (PK), order_id (FK), menu_item_id (FK), item_name_snapshot, item_price_snapshot (decimal), quantity, subtotal, note (nullable) | idx_order_items_order |
 | order_item_options | id (PK), order_item_id (FK), option_name_snapshot, option_price_snapshot | idx_order_item_options_item |
 | order_status_history | id (PK), order_id (FK), status (enum), changed_by (FK→users, nullable), note, created_at | idx_status_history_order |
 

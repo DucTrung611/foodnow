@@ -268,6 +268,12 @@ export class RestaurantsService {
     return toMenuItemResponseDto(item);
   }
 
+  async getMenuItemById(id: string): Promise<MenuItemResponseDto> {
+    const item = await this.restaurantsRepository.findMenuItemById(id);
+    if (!item) throw new NotFoundException('Menu item not found');
+    return toMenuItemResponseDto(item);
+  }
+
   async updateMenuItem(
     userId: string,
     id: string,

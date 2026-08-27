@@ -6,6 +6,8 @@ import databaseConfig from './database.config';
 import redisConfig from './redis.config';
 import jwtConfig from './jwt.config';
 import restaurantConfig from './restaurant.config';
+import orderConfig from './order.config';
+import deliveryConfig from './delivery.config';
 
 @Module({
   imports: [
@@ -18,6 +20,8 @@ import restaurantConfig from './restaurant.config';
         redisConfig,
         jwtConfig,
         restaurantConfig,
+        orderConfig,
+        deliveryConfig,
       ],
     }),
   ],

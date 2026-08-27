@@ -8,7 +8,7 @@
 Auth (register/login/refresh/logout), profile, and address management. Implemented in full — not a stub.
 
 ## Public API
-- `UsersService` (exported via `users.module.ts`) — profile + address CRUD, consumed by other features via DI (never `UsersRepository` directly)
+- `UsersService` (exported via `users.module.ts`) — profile + address CRUD, consumed by other features via DI (never `UsersRepository` directly). `getAddressById(userId, addressId)` is consumed by `orders` to validate `deliveryAddressId` ownership and get lat/lng for the delivery-fee calc.
 - `AuthService` is internal to this module (not exported); other features never need it — `JwtAuthGuard`/`RolesGuard` in `shared/guards/` verify tokens directly via the globally-provided `JwtService`, not via this feature's services
 
 ## Routes
