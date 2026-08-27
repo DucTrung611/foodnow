@@ -102,8 +102,10 @@ Applied globally by `AllExceptionsFilter`. `details` is `null` unless validation
 | `ORDER_3008` | 422 | Invalid status transition |
 | `ORDER_3009` | 409 | Optimistic lock conflict — retry |
 | `DELIVERY_4001` | 422 | No available driver in radius |
+| `PAYMENT_5000` | 404 | Payment not found |
 | `PAYMENT_5001` | 402 | Payment declined by provider |
 | `PAYMENT_5002` | 409 | Duplicate idempotency key with different payload |
+| `PAYMENT_5003` | 422 | Payment is not in a refundable state |
 | `PROMO_6001` | 422 | Promotion expired or usage limit reached |
 
 **HTTP status usage:** `200` read/update · `201` create · `204` delete · `400` malformed · `401` unauthenticated · `403` unauthorized role · `404` not found · `409` conflict/lock · `422` business rule violation · `429` rate limited.
