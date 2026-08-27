@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../core/database/prisma.service';
 import { Promotion } from '../../generated/prisma/client';
-import { PromotionDiscountType } from '../../generated/prisma/enums';
+import { CreatePromotionData } from './types/promotions.types';
 
 @Injectable()
 export class PromotionsRepository {
@@ -11,19 +11,7 @@ export class PromotionsRepository {
     return this.prisma.promotion.findUnique({ where: { code } });
   }
 
-  createPromotion(data: {
-    code: string;
-    restaurantId: string | null;
-    discountType: PromotionDiscountType;
-    discountValue: number;
-    minOrderAmount?: number;
-    maxDiscountAmount?: number;
-    usageLimit?: number;
-    usageLimitPerUser?: number;
-    startsAt: Date;
-    endsAt: Date;
-    isActive: boolean;
-  }): Promise<Promotion> {
+  createPromotion(data: CreatePromotionData): Promise<Promotion> {
     return this.prisma.promotion.create({ data });
   }
 

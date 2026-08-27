@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../core/database/prisma.service';
 import { Review } from '../../generated/prisma/client';
+import { CreateReviewData } from './types/reviews.types';
 
 @Injectable()
 export class ReviewsRepository {
@@ -10,14 +11,7 @@ export class ReviewsRepository {
     return this.prisma.review.findUnique({ where: { orderId } });
   }
 
-  createReview(data: {
-    orderId: string;
-    customerId: string;
-    restaurantId: string | null;
-    driverId: string | null;
-    rating: number;
-    comment?: string;
-  }): Promise<Review> {
+  createReview(data: CreateReviewData): Promise<Review> {
     return this.prisma.review.create({ data });
   }
 

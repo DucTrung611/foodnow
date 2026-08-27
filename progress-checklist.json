@@ -1,0 +1,91 @@
+{
+  "roots": {
+    "backend": "02-backend-nestjs-foodnow/src/features",
+    "frontend": "01-frontend-reactjs-foodnow/src/features"
+  },
+  "templates": {
+    "nest-module-with-gateway": {
+      "description": "Backend feature with realtime Socket.IO events (order/delivery/payment status broadcasts) on top of the standard CRUD module. Derived from orders, delivery, payments.",
+      "required": [
+        { "label": "Module wiring", "glob": "*.module.ts" },
+        { "label": "Controller(s)", "glob": "*.controller.ts" },
+        { "label": "Service (business logic)", "glob": "*.service.ts" },
+        { "label": "Repository (Prisma access)", "glob": "*.repository.ts" },
+        { "label": "Socket.IO gateway", "glob": "*.gateway.ts" },
+        { "label": "DTOs", "glob": "dto/*.dto.ts" },
+        { "label": "Tests", "glob": "tests/*.spec.ts" },
+        { "label": "Feature types", "glob": "types/*.types.ts" },
+        { "label": "context.md", "glob": "context.md" }
+      ]
+    },
+    "nest-module": {
+      "description": "Standard backend CRUD feature, no realtime gateway. Derived from restaurants, users (also matches promotions/reviews/earnings' actual shape).",
+      "required": [
+        { "label": "Module wiring", "glob": "*.module.ts" },
+        { "label": "Controller(s)", "glob": "*.controller.ts" },
+        { "label": "Service (business logic)", "glob": "*.service.ts" },
+        { "label": "Repository (Prisma access)", "glob": "*.repository.ts" },
+        { "label": "DTOs", "glob": "dto/*.dto.ts" },
+        { "label": "Tests", "glob": "tests/*.spec.ts" },
+        { "label": "Feature types", "glob": "types/*.types.ts" },
+        { "label": "context.md", "glob": "context.md" }
+      ]
+    },
+    "react-feature": {
+      "description": "Frontend feature that owns dedicated page(s). Derived from orders, restaurants, auth.",
+      "required": [
+        { "label": "Public entry (index.ts)", "glob": "index.ts" },
+        { "label": "Components", "glob": "components/*.tsx" },
+        { "label": "Hooks", "glob": "hooks/*.ts" },
+        { "label": "Pages", "glob": "pages/*.tsx" },
+        { "label": "Service(s)", "glob": "services/*.service.ts" },
+        { "label": "Feature types", "glob": "types/*.types.ts" },
+        { "label": "Tests", "glob": "**/*.test.*" },
+        { "label": "context.md", "glob": "context.md" }
+      ]
+    },
+    "react-widget-feature": {
+      "description": "Frontend feature embedded into other features' pages rather than owning its own route (e.g. a checkout panel, a promo input, a review form). Same as react-feature minus dedicated pages. Derived from payments (also matches promotions/reviews' actual shape).",
+      "required": [
+        { "label": "Public entry (index.ts)", "glob": "index.ts" },
+        { "label": "Components", "glob": "components/*.tsx" },
+        { "label": "Hooks", "glob": "hooks/*.ts" },
+        { "label": "Service(s)", "glob": "services/*.service.ts" },
+        { "label": "Feature types", "glob": "types/*.types.ts" },
+        { "label": "Tests", "glob": "**/*.test.*" },
+        { "label": "context.md", "glob": "context.md" }
+      ]
+    }
+  },
+  "features": [
+    { "name": "orders", "side": "backend", "template": "nest-module-with-gateway" },
+    { "name": "delivery", "side": "backend", "template": "nest-module-with-gateway" },
+    { "name": "payments", "side": "backend", "template": "nest-module-with-gateway" },
+    { "name": "restaurants", "side": "backend", "template": "nest-module" },
+    { "name": "promotions", "side": "backend", "template": "nest-module" },
+    { "name": "reviews", "side": "backend", "template": "nest-module" },
+    { "name": "users", "side": "backend", "template": "nest-module" },
+    { "name": "earnings", "side": "backend", "template": "nest-module" },
+    {
+      "name": "admin",
+      "side": "backend",
+      "required": [
+        { "label": "Module wiring", "glob": "*.module.ts" },
+        { "label": "Controller", "glob": "*.controller.ts" },
+        { "label": "Service (orchestrates users/orders services)", "glob": "*.service.ts" },
+        { "label": "DTOs", "glob": "dto/*.dto.ts" },
+        { "label": "Tests", "glob": "tests/*.spec.ts" },
+        { "label": "context.md", "glob": "context.md" }
+      ]
+    },
+
+    { "name": "orders", "side": "frontend", "template": "react-feature" },
+    { "name": "restaurants", "side": "frontend", "template": "react-feature" },
+    { "name": "auth", "side": "frontend", "template": "react-feature" },
+    { "name": "delivery", "side": "frontend", "template": "react-feature" },
+    { "name": "admin", "side": "frontend", "template": "react-feature" },
+    { "name": "payments", "side": "frontend", "template": "react-widget-feature" },
+    { "name": "promotions", "side": "frontend", "template": "react-widget-feature" },
+    { "name": "reviews", "side": "frontend", "template": "react-widget-feature" }
+  ]
+}
