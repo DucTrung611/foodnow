@@ -146,6 +146,14 @@ export class RestaurantsRepository {
     return rows[0] ?? null;
   }
 
+  async updateAvgRating(id: string, avgRating: number): Promise<void> {
+    await this.prisma.$executeRaw`
+      UPDATE restaurants
+      SET avg_rating = ${avgRating}, updated_at = now()
+      WHERE id = ${id}
+    `;
+  }
+
   async search(
     params: RestaurantSearchParams,
   ): Promise<{ rows: RestaurantRow[]; total: number }> {

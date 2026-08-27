@@ -1,9 +1,11 @@
 import { Module } from '@nestjs/common';
+import { RestaurantsModule } from '../restaurants/restaurants.module';
 import { PromotionsController } from './promotions.controller';
-import { PromotionsService } from './promotions.service';
 import { PromotionsRepository } from './promotions.repository';
+import { PromotionsService } from './promotions.service';
 
 @Module({
+  imports: [RestaurantsModule],
   controllers: [PromotionsController],
   providers: [PromotionsService, PromotionsRepository],
   exports: [PromotionsService],

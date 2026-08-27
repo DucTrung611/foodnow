@@ -301,6 +301,17 @@ export class RestaurantsService {
     await this.restaurantsRepository.deleteMenuItem(id);
   }
 
+  /** Called by ReviewsService after it recomputes the average from its own
+   * `reviews` rows — restaurants owns the `avg_rating` column, reviews owns
+   * the rating data, so the write goes through this public method rather
+   * than either feature reaching into the other's table. */
+  async updateAvgRating(
+    restaurantId: string,
+    avgRating: number,
+  ): Promise<void> {
+    await this.restaurantsRepository.updateAvgRating(restaurantId, avgRating);
+  }
+
   private assertOwner(ownerId: string, userId: string): void {
     if (ownerId !== userId) {
       throw new ForbiddenException({

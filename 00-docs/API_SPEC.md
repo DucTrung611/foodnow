@@ -83,6 +83,7 @@ Applied globally by `AllExceptionsFilter`. `details` is `null` unless validation
 | 4000 | Delivery | `DELIVERY_` |
 | 5000 | Payments | `PAYMENT_` |
 | 6000 | Promotions | `PROMO_` |
+| 7000 | Reviews | `REVIEW_` |
 | 9000 | Common / system | `COMMON_` |
 
 | Code | HTTP | Message |
@@ -107,6 +108,9 @@ Applied globally by `AllExceptionsFilter`. `details` is `null` unless validation
 | `PAYMENT_5002` | 409 | Duplicate idempotency key with different payload |
 | `PAYMENT_5003` | 422 | Payment is not in a refundable state |
 | `PROMO_6001` | 422 | Promotion expired or usage limit reached |
+| `PROMO_6002` | 409 | Promotion code already exists |
+| `REVIEW_7001` | 422 | Order is not yet reviewable (must be DELIVERED) |
+| `REVIEW_7002` | 409 | Order has already been reviewed |
 
 **HTTP status usage:** `200` read/update · `201` create · `204` delete · `400` malformed · `401` unauthenticated · `403` unauthorized role · `404` not found · `409` conflict/lock · `422` business rule violation · `429` rate limited.
 

@@ -10,6 +10,7 @@ import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Prisma } from '../../generated/prisma/client';
 import { OrderStatus } from '../../generated/prisma/enums';
+import { PromotionsService } from '../promotions/promotions.service';
 import { RestaurantsService } from '../restaurants/restaurants.service';
 import {
   MenuItemOptionResponseDto,
@@ -169,6 +170,7 @@ export class OrdersService {
     private readonly configService: ConfigService,
     private readonly ordersGateway: OrdersGateway,
     private readonly eventEmitter: EventEmitter2,
+    private readonly promotionsService: PromotionsService,
   ) {}
 
   // ─── Cart ────────────────────────────────────────────────────────────
@@ -299,12 +301,6 @@ export class OrdersService {
         message: 'Restaurant is closed',
       });
     }
-    if (dto.promotionCode) {
-      throw new UnprocessableEntityException({
-        code: 'PROMO_6001',
-        message: 'Promotion expired or usage limit reached',
-      });
-    }
 
     const address = await this.usersService.getAddressById(
       customerId,
@@ -335,7 +331,18 @@ export class OrdersService {
       3000,
     );
     const deliveryFee = baseFee + perKmFee * Math.ceil(distanceMeters / 1000);
-    const discountAmount = 0;
+
+    let discountAmount = 0;
+    let appliedPromotionId: string | undefined;
+    if (dto.promotionCode) {
+      const promo = await this.promotionsService.validate(customerId, {
+        code: dto.promotionCode,
+        restaurantId: dto.restaurantId,
+        subtotal: subtotal.toFixed(2),
+      });
+      discountAmount = Number(promo.discountAmount);
+      appliedPromotionId = promo.id;
+    }
     const totalAmount = subtotal + deliveryFee - discountAmount;
 
     const order = await this.ordersRepository.createOrder({
@@ -349,6 +356,16 @@ export class OrdersService {
       totalAmount,
       items: resolvedItems,
     });
+
+    if (appliedPromotionId) {
+      // Fire-and-forget: usage accounting must never block order creation.
+      void this.promotionsService.recordUsage(
+        appliedPromotionId,
+        customerId,
+        order.id,
+        discountAmount,
+      );
+    }
 
     const response = toOrderResponseDto(order);
     this.ordersGateway.emitOrderCreated(dto.restaurantId, response);

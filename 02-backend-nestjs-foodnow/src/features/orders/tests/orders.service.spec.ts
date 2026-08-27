@@ -10,6 +10,7 @@ import { MenuItemResponseDto } from '../../restaurants/dto/menu-item-response.dt
 import { RestaurantMenuResponseDto } from '../../restaurants/dto/restaurant-menu-response.dto';
 import { RestaurantResponseDto } from '../../restaurants/dto/restaurant-response.dto';
 import { RestaurantsService } from '../../restaurants/restaurants.service';
+import { PromotionsService } from '../../promotions/promotions.service';
 import { OrdersGateway } from '../orders.gateway';
 import {
   CartItemWithCart,
@@ -166,6 +167,7 @@ describe('OrdersService', () => {
   let configService: jest.Mocked<ConfigService>;
   let gateway: jest.Mocked<OrdersGateway>;
   let eventEmitter: jest.Mocked<EventEmitter2>;
+  let promotionsService: jest.Mocked<PromotionsService>;
 
   beforeEach(() => {
     repository = {
@@ -213,6 +215,11 @@ describe('OrdersService', () => {
 
     eventEmitter = { emit: jest.fn() } as unknown as jest.Mocked<EventEmitter2>;
 
+    promotionsService = {
+      validate: jest.fn(),
+      recordUsage: jest.fn(),
+    } as unknown as jest.Mocked<PromotionsService>;
+
     service = new OrdersService(
       repository,
       restaurantsService,
@@ -220,6 +227,7 @@ describe('OrdersService', () => {
       configService,
       gateway,
       eventEmitter,
+      promotionsService,
     );
   });
 
@@ -426,14 +434,20 @@ describe('OrdersService', () => {
       expect(usersService.getAddressById).not.toHaveBeenCalled();
     });
 
-    it('rejects any promotionCode (PROMO_6001) — promotions is not implemented yet', async () => {
+    it('propagates PROMO_6001 from PromotionsService.validate for an invalid code', async () => {
+      promotionsService.validate.mockRejectedValue(
+        Object.assign(new Error('invalid promo'), {
+          response: { code: 'PROMO_6001' },
+        }),
+      );
+
       await expect(
         service.createOrder('customer-1', {
           ...dto,
-          promotionCode: 'FREESHIP',
+          promotionCode: 'EXPIRED',
         }),
       ).rejects.toMatchObject({ response: { code: 'PROMO_6001' } });
-      expect(usersService.getAddressById).not.toHaveBeenCalled();
+      expect(repository.createOrder).not.toHaveBeenCalled();
     });
 
     it("rejects an item that is not on this restaurant's menu (CART_3001)", async () => {
@@ -517,6 +531,50 @@ describe('OrdersService', () => {
       );
       expect(result.id).toBe('order-1');
       expect(result.statusHistory).toHaveLength(1);
+      expect(promotionsService.validate).not.toHaveBeenCalled();
+      expect(promotionsService.recordUsage).not.toHaveBeenCalled();
+    });
+
+    it('applies a valid promotion to the total and records usage after the order commits', async () => {
+      promotionsService.validate.mockResolvedValue({
+        id: 'promo-1',
+        code: 'FREESHIP',
+        discountAmount: '15000.00',
+      });
+      repository.createOrder.mockResolvedValue(makeOrder());
+
+      const expectedSubtotal = 110000;
+      const distanceMeters = haversineDistanceMeters(
+        RESTAURANT.lat,
+        RESTAURANT.lng,
+        ADDRESS.lat,
+        ADDRESS.lng,
+      );
+      const expectedDeliveryFee =
+        15000 + 3000 * Math.ceil(distanceMeters / 1000);
+
+      await service.createOrder('customer-1', {
+        ...dto,
+        promotionCode: 'FREESHIP',
+      });
+
+      expect(promotionsService.validate).toHaveBeenCalledWith('customer-1', {
+        code: 'FREESHIP',
+        restaurantId: 'restaurant-1',
+        subtotal: expectedSubtotal.toFixed(2),
+      });
+      expect(repository.createOrder).toHaveBeenCalledWith(
+        expect.objectContaining({
+          discountAmount: 15000,
+          totalAmount: expectedSubtotal + expectedDeliveryFee - 15000,
+        }),
+      );
+      expect(promotionsService.recordUsage).toHaveBeenCalledWith(
+        'promo-1',
+        'customer-1',
+        'order-1',
+        15000,
+      );
     });
   });
 

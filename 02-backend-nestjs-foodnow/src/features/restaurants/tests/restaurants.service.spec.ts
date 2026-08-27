@@ -60,6 +60,7 @@ describe('RestaurantsService', () => {
       updateMenuItem: jest.fn(),
       deleteMenuItem: jest.fn(),
       findMenuByRestaurantId: jest.fn(),
+      updateAvgRating: jest.fn(),
     } as unknown as jest.Mocked<RestaurantsRepository>;
 
     configService = {
@@ -568,6 +569,17 @@ describe('RestaurantsService', () => {
       await service.deleteMenuItem('owner-1', 'item-1');
 
       expect(repository.deleteMenuItem).toHaveBeenCalledWith('item-1');
+    });
+  });
+
+  describe('updateAvgRating', () => {
+    it('delegates the write to the repository', async () => {
+      await service.updateAvgRating('restaurant-1', 4.5);
+
+      expect(repository.updateAvgRating).toHaveBeenCalledWith(
+        'restaurant-1',
+        4.5,
+      );
     });
   });
 });
