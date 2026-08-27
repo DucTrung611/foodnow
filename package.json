@@ -1,0 +1,15 @@
+{
+  "name": "foodnow",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -n backend,frontend -c blue,green \"npm:dev:be\" \"npm:dev:fe\"",
+    "dev:fe": "npm --prefix 01-frontend-reactjs-foodnow run dev",
+    "dev:be": "npm --prefix 02-backend-nestjs-foodnow run start:dev",
+    "test:fe": "npm --prefix 01-frontend-reactjs-foodnow run test",
+    "test:be": "npm --prefix 02-backend-nestjs-foodnow run test",
+    "test": "npm run test:fe && npm run test:be"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
