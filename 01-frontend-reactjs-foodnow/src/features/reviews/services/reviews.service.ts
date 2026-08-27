@@ -1,5 +1,4 @@
-import { apiClient, unwrap } from '@/shared/services/client';
-import type { PaginatedResult } from '@/shared/types';
+import { apiClient, unwrap, unwrapPaginated } from '@/shared/services/client';
 import type { CreateReviewPayload, Review, ReviewListParams } from '../types/reviews.types';
 
 export const reviewsService = {
@@ -7,5 +6,5 @@ export const reviewsService = {
     unwrap<Review>(apiClient.post(`/orders/${orderId}/reviews`, payload)),
 
   listByRestaurant: (restaurantId: string, params: ReviewListParams = {}) =>
-    unwrap<PaginatedResult<Review>>(apiClient.get(`/restaurants/${restaurantId}/reviews`, { params })),
+    unwrapPaginated<Review>(apiClient.get(`/restaurants/${restaurantId}/reviews`, { params })),
 };

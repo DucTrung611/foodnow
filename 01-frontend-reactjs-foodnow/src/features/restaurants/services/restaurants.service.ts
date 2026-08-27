@@ -1,5 +1,4 @@
-import { apiClient, unwrap } from '@/shared/services/client';
-import type { PaginatedResult } from '@/shared/types';
+import { apiClient, unwrap, unwrapPaginated } from '@/shared/services/client';
 import type {
   CreateMenuItemPayload,
   CreateRestaurantPayload,
@@ -11,7 +10,7 @@ import type {
 
 export const restaurantsService = {
   search: (params: RestaurantSearchParams) =>
-    unwrap<PaginatedResult<Restaurant>>(apiClient.get('/restaurants', { params })),
+    unwrapPaginated<Restaurant>(apiClient.get('/restaurants', { params })),
 
   getById: (id: string) => unwrap<Restaurant>(apiClient.get(`/restaurants/${id}`)),
 

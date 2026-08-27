@@ -1,6 +1,6 @@
 import axios, { AxiosError, type AxiosRequestConfig } from 'axios';
 import { useAuthStore } from '@/shared/stores/auth.store';
-import { ApiError, type ApiErrorBody, type ApiResponse } from '@/shared/types';
+import { ApiError, type ApiErrorBody, type ApiResponse, type PaginatedResult } from '@/shared/types';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000/api/v1';
 
@@ -70,4 +70,15 @@ apiClient.interceptors.response.use(
 export async function unwrap<T>(promise: Promise<{ data: ApiResponse<T> }>): Promise<T> {
   const res = await promise;
   return res.data.data;
+}
+
+/**
+ * Unwraps a list endpoint's envelope into `{ items, meta }`. `meta` sits
+ * alongside `data` at the envelope's top level (API_SPEC.md §4), not nested
+ * inside it — `data` on a list response is just the bare array — so this
+ * can't reuse `unwrap`, which only returns `data`.
+ */
+export async function unwrapPaginated<T>(promise: Promise<{ data: ApiResponse<T[]> }>): Promise<PaginatedResult<T>> {
+  const res = await promise;
+  return { items: res.data.data, meta: res.data.meta! };
 }
