@@ -55,6 +55,27 @@ export class UsersRepository {
     return this.prisma.user.update({ where: { id }, data });
   }
 
+  updateStatus(id: string, status: UserStatus): Promise<User> {
+    return this.prisma.user.update({ where: { id }, data: { status } });
+  }
+
+  async findMany(
+    where: Prisma.UserWhereInput,
+    skip: number,
+    take: number,
+  ): Promise<{ rows: User[]; total: number }> {
+    const [rows, total] = await this.prisma.$transaction([
+      this.prisma.user.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take,
+      }),
+      this.prisma.user.count({ where }),
+    ]);
+    return { rows, total };
+  }
+
   listAddresses(userId: string): Promise<AddressRow[]> {
     return this.prisma.$queryRaw<AddressRow[]>`
       SELECT ${ADDRESS_COLUMNS}

@@ -645,6 +645,55 @@ describe('OrdersService', () => {
     });
   });
 
+  describe('listForAdmin', () => {
+    it('builds an unscoped where clause from only the provided filters', async () => {
+      repository.findOrders.mockResolvedValue({ rows: [], total: 0 });
+
+      await service.listForAdmin({ restaurantId: 'restaurant-1' });
+
+      expect(repository.findOrders).toHaveBeenCalledWith(
+        { restaurantId: 'restaurant-1' },
+        undefined,
+        0,
+        20,
+      );
+    });
+
+    it('merges status/customerId/restaurantId/driverId and paginates', async () => {
+      repository.findOrders.mockResolvedValue({
+        rows: [makeOrder()],
+        total: 1,
+      });
+
+      const result = await service.listForAdmin({
+        status: OrderStatus.PENDING,
+        customerId: 'customer-1',
+        restaurantId: 'restaurant-1',
+        driverId: 'driver-1',
+        page: 2,
+        limit: 10,
+      });
+
+      expect(repository.findOrders).toHaveBeenCalledWith(
+        {
+          status: OrderStatus.PENDING,
+          customerId: 'customer-1',
+          restaurantId: 'restaurant-1',
+          driverId: 'driver-1',
+        },
+        undefined,
+        10,
+        10,
+      );
+      expect(result.meta).toEqual({
+        page: 2,
+        limit: 10,
+        total: 1,
+        totalPages: 1,
+      });
+    });
+  });
+
   describe('getOrderById', () => {
     it('throws ORDER_3005 when the order does not exist', async () => {
       repository.findOrderById.mockResolvedValue(null);

@@ -44,7 +44,7 @@ import {
   OrderWithItems,
   OrdersRepository,
 } from './orders.repository';
-import { ResolvedOrderItem } from './types/orders.types';
+import { AdminOrderFilter, ResolvedOrderItem } from './types/orders.types';
 import { canAdvance } from './utils/order-status-transitions.util';
 import { hasOrderAccess } from './utils/order-access.util';
 
@@ -428,6 +428,34 @@ export class OrdersService {
     const { rows, total } = await this.ordersRepository.findOrders(
       where,
       query.sort,
+      skip,
+      take,
+    );
+    return buildPaginatedResult(
+      rows.map(toOrderListItemDto),
+      total,
+      page,
+      limit,
+    );
+  }
+
+  /** No access scoping — the `admin` feature is the only caller, guarded by RolesGuard at the route. */
+  async listForAdmin(
+    filter: AdminOrderFilter,
+  ): Promise<PaginatedResult<OrderResponseDto>> {
+    const page = filter.page ?? 1;
+    const limit = filter.limit ?? 20;
+    const { skip, take } = paginate(page, limit);
+
+    const where: Prisma.OrderWhereInput = {};
+    if (filter.status) where.status = filter.status;
+    if (filter.customerId) where.customerId = filter.customerId;
+    if (filter.restaurantId) where.restaurantId = filter.restaurantId;
+    if (filter.driverId) where.driverId = filter.driverId;
+
+    const { rows, total } = await this.ordersRepository.findOrders(
+      where,
+      filter.sort,
       skip,
       take,
     );

@@ -1,10 +1,17 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { User } from '../../generated/prisma/client';
+import { Prisma, User } from '../../generated/prisma/client';
+import { UserStatus } from '../../generated/prisma/enums';
+import { PaginatedResult } from '../../shared/types/paginated-result.type';
+import {
+  buildPaginatedResult,
+  paginate,
+} from '../../shared/utils/pagination.util';
 import { AddressResponseDto } from './dto/address-response.dto';
 import { CreateAddressDto } from './dto/create-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UserResponseDto } from './dto/user-response.dto';
+import { AdminUserFilter } from './types/users.types';
 import { AddressRow, UsersRepository } from './users.repository';
 
 export function toUserResponseDto(user: User): UserResponseDto {
@@ -106,5 +113,45 @@ export class UsersService {
   async deleteAddress(userId: string, addressId: string): Promise<void> {
     const deleted = await this.usersRepository.deleteAddress(addressId, userId);
     if (!deleted) throw new NotFoundException('Address not found');
+  }
+
+  /** Admin-only account approval/suspension — never routed except via `admin`. */
+  async updateStatus(
+    userId: string,
+    status: UserStatus,
+  ): Promise<UserResponseDto> {
+    const user = await this.usersRepository.findById(userId);
+    if (!user) throw new NotFoundException('User not found');
+
+    const updated = await this.usersRepository.updateStatus(userId, status);
+    return toUserResponseDto(updated);
+  }
+
+  /** Admin-only account listing — never routed except via `admin`. */
+  async listUsers(
+    filter: AdminUserFilter,
+  ): Promise<PaginatedResult<UserResponseDto>> {
+    const page = filter.page ?? 1;
+    const limit = filter.limit ?? 20;
+    const { skip, take } = paginate(page, limit);
+
+    const where: Prisma.UserWhereInput = {};
+    if (filter.status) where.status = filter.status;
+    if (filter.role) where.role = filter.role;
+    if (filter.search) {
+      where.fullName = { contains: filter.search, mode: 'insensitive' };
+    }
+
+    const { rows, total } = await this.usersRepository.findMany(
+      where,
+      skip,
+      take,
+    );
+    return buildPaginatedResult(
+      rows.map(toUserResponseDto),
+      total,
+      page,
+      limit,
+    );
   }
 }

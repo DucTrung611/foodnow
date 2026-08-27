@@ -179,7 +179,8 @@ Applied globally by `AllExceptionsFilter`. `details` is `null` unless validation
 | POST | `/orders/:id/reviews` | Rate restaurant + driver | CUSTOMER |
 | GET | `/restaurants/:id/reviews` | List reviews | Public |
 | GET | `/drivers/me/earnings` | Earnings summary | DRIVER |
-| GET | `/admin/orders` | All orders, filterable | ADMIN |
+| GET | `/admin/orders` | All orders, filterable by `status`/`customerId`/`restaurantId`/`driverId` | ADMIN |
+| GET | `/admin/users` | All users, filterable by `status`/`role`/`search` (partial match on `fullName`) | ADMIN |
 | PATCH | `/admin/users/:id/status` | Approve / suspend account | ADMIN |
 
 ## 7. Endpoint Details

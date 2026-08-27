@@ -15,6 +15,7 @@ import { PaymentsModule } from './features/payments/payments.module';
 import { PromotionsModule } from './features/promotions/promotions.module';
 import { ReviewsModule } from './features/reviews/reviews.module';
 import { EarningsModule } from './features/earnings/earnings.module';
+import { AdminModule } from './features/admin/admin.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { EarningsModule } from './features/earnings/earnings.module';
     PromotionsModule,
     ReviewsModule,
     EarningsModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],

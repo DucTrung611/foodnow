@@ -11,6 +11,8 @@ describe('UsersService', () => {
     usersRepository = {
       findById: jest.fn(),
       updateProfile: jest.fn(),
+      updateStatus: jest.fn(),
+      findMany: jest.fn(),
       listAddresses: jest.fn(),
       findAddressById: jest.fn(),
       createAddress: jest.fn(),
@@ -82,6 +84,107 @@ describe('UsersService', () => {
         fullName: 'New Name',
       });
       expect(result.fullName).toBe('New Name');
+    });
+  });
+
+  describe('updateStatus', () => {
+    it('throws NotFoundException when the user does not exist', async () => {
+      usersRepository.findById.mockResolvedValue(null);
+
+      await expect(
+        usersService.updateStatus('missing-id', UserStatus.SUSPENDED),
+      ).rejects.toThrow('User not found');
+      expect(usersRepository.updateStatus).not.toHaveBeenCalled();
+    });
+
+    it('updates the status and returns the mapped result', async () => {
+      usersRepository.findById.mockResolvedValue({
+        id: 'vendor-1',
+        email: 'v@test.com',
+        phone: '0912345678',
+        fullName: 'Vendor',
+        avatarUrl: null,
+        role: Role.VENDOR,
+        status: UserStatus.PENDING,
+        createdAt: new Date('2026-01-01'),
+        passwordHash: 'hash',
+      } as never);
+      usersRepository.updateStatus.mockResolvedValue({
+        id: 'vendor-1',
+        email: 'v@test.com',
+        phone: '0912345678',
+        fullName: 'Vendor',
+        avatarUrl: null,
+        role: Role.VENDOR,
+        status: UserStatus.ACTIVE,
+        createdAt: new Date('2026-01-01'),
+        passwordHash: 'hash',
+      } as never);
+
+      const result = await usersService.updateStatus(
+        'vendor-1',
+        UserStatus.ACTIVE,
+      );
+
+      expect(usersRepository.updateStatus).toHaveBeenCalledWith(
+        'vendor-1',
+        UserStatus.ACTIVE,
+      );
+      expect(result.status).toBe(UserStatus.ACTIVE);
+    });
+  });
+
+  describe('listUsers', () => {
+    it('builds a where clause from only the provided filters and paginates', async () => {
+      usersRepository.findMany.mockResolvedValue({ rows: [], total: 0 });
+
+      await usersService.listUsers({ role: Role.VENDOR, page: 2, limit: 10 });
+
+      expect(usersRepository.findMany).toHaveBeenCalledWith(
+        { role: Role.VENDOR },
+        10,
+        10,
+      );
+    });
+
+    it('maps search to a case-insensitive contains filter on fullName', async () => {
+      usersRepository.findMany.mockResolvedValue({
+        rows: [
+          {
+            id: 'vendor-1',
+            email: 'v@test.com',
+            phone: '0912345678',
+            fullName: 'Vendor',
+            avatarUrl: null,
+            role: Role.VENDOR,
+            status: UserStatus.PENDING,
+            createdAt: new Date('2026-01-01'),
+            passwordHash: 'hash',
+          } as never,
+        ],
+        total: 1,
+      });
+
+      const result = await usersService.listUsers({
+        status: UserStatus.PENDING,
+        search: 'ven',
+      });
+
+      expect(usersRepository.findMany).toHaveBeenCalledWith(
+        {
+          status: UserStatus.PENDING,
+          fullName: { contains: 'ven', mode: 'insensitive' },
+        },
+        0,
+        20,
+      );
+      expect(result.meta).toEqual({
+        page: 1,
+        limit: 20,
+        total: 1,
+        totalPages: 1,
+      });
+      expect(result.data[0]).not.toHaveProperty('passwordHash');
     });
   });
 

@@ -8,11 +8,11 @@
 Auth (register/login/refresh/logout), profile, and address management. Implemented in full — not a stub.
 
 ## Public API
-- `UsersService` (exported via `users.module.ts`) — profile + address CRUD, consumed by other features via DI (never `UsersRepository` directly). `getAddressById(userId, addressId)` is consumed by `orders` to validate `deliveryAddressId` ownership and get lat/lng for the delivery-fee calc.
+- `UsersService` (exported via `users.module.ts`) — profile + address CRUD, consumed by other features via DI (never `UsersRepository` directly). `getAddressById(userId, addressId)` is consumed by `orders` to validate `deliveryAddressId` ownership and get lat/lng for the delivery-fee calc. `updateStatus`/`listUsers` are admin-only entry points consumed by `admin` via DI — never routed here.
 - `AuthService` is internal to this module (not exported); other features never need it — `JwtAuthGuard`/`RolesGuard` in `shared/guards/` verify tokens directly via the globally-provided `JwtService`, not via this feature's services
 
 ## Routes
-- `POST /auth/register` — Public. Role must be `CUSTOMER`/`VENDOR`/`DRIVER` (not `ADMIN`). `CUSTOMER` accounts start `ACTIVE`; `VENDOR`/`DRIVER` start `PENDING` pending admin approval (`PATCH /admin/users/:id/status`, not yet implemented).
+- `POST /auth/register` — Public. Role must be `CUSTOMER`/`VENDOR`/`DRIVER` (not `ADMIN`). `CUSTOMER` accounts start `ACTIVE`; `VENDOR`/`DRIVER` start `PENDING` pending admin approval (`PATCH /admin/users/:id/status`, see `features/admin`).
 - `POST /auth/login` — Public. Returns `{ accessToken, user }` in the body; sets `refreshToken` as an httpOnly cookie (per API_SPEC's token-flow table — the flow diagram's shorthand `{accessToken, refreshToken, user}` is treated as informal, since the detailed table is explicit that refresh token storage is httpOnly-cookie-only).
 - `POST /auth/refresh` — reads the `refreshToken` cookie, verifies it, checks its `jti` is still valid in Redis, rotates (old `jti` deleted, new one stored), returns a new `accessToken` and sets a new cookie.
 - `POST /auth/logout` — Any (authenticated). Revokes the refresh token's `jti` in Redis, clears the cookie.
@@ -33,5 +33,4 @@ Auth (register/login/refresh/logout), profile, and address management. Implement
 - Listens: none
 
 ## Deferred (not in this pass)
-- `config/jwt.config.ts` values are wired but there's no `PATCH /admin/users/:id/status` yet (lives in a future `admin`-scoped feature or an addition here — not decided).
 - No email/phone verification flow.
