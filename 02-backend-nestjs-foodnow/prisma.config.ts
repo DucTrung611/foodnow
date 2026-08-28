@@ -5,6 +5,7 @@ export default defineConfig({
   schema: 'prisma/schema.prisma',
   migrations: {
     path: 'prisma/migrations',
+    seed: 'ts-node --transpile-only -r ./prisma/ts-node-js-ext-hook.cjs prisma/seed.ts',
   },
   datasource: {
     url: env('DATABASE_URL'),
