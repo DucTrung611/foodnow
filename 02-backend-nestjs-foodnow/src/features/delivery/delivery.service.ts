@@ -16,6 +16,7 @@ import { RestaurantsService } from '../restaurants/restaurants.service';
 import { UsersService } from '../users/users.service';
 import { JwtPayload } from '../../shared/types/jwt-payload.type';
 import { Role } from '../../shared/types/role.enum';
+import { formatDecimal } from '../../shared/utils/decimal.util';
 import { haversineDistanceMeters } from '../../shared/utils/geo.util';
 import { AvailableDeliveryResponseDto } from './dto/available-delivery-response.dto';
 import { DeliveryResponseDto } from './dto/delivery-response.dto';
@@ -37,7 +38,7 @@ function toDeliveryResponseDto(delivery: Delivery): DeliveryResponseDto {
     driverId: delivery.driverId,
     pickupTime: delivery.pickupTime,
     deliveryTime: delivery.deliveryTime,
-    estimatedDistanceKm: String(delivery.estimatedDistanceKm),
+    estimatedDistanceKm: formatDecimal(delivery.estimatedDistanceKm),
     status: delivery.status,
   };
 }

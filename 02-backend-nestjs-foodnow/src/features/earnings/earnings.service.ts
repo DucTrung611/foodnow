@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { DriverEarning } from '../../generated/prisma/client';
 import { DriverEarningStatus } from '../../generated/prisma/enums';
+import { formatDecimal } from '../../shared/utils/decimal.util';
 import {
   EarningResponseDto,
   EarningsSummaryResponseDto,
@@ -13,7 +14,7 @@ function toEarningResponseDto(earning: DriverEarning): EarningResponseDto {
   return {
     id: earning.id,
     deliveryId: earning.deliveryId,
-    amount: String(earning.amount),
+    amount: formatDecimal(earning.amount),
     status: earning.status,
     paidAt: earning.paidAt,
     createdAt: earning.createdAt,

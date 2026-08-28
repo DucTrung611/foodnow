@@ -17,6 +17,7 @@ import {
 import { PaymentMethod, PaymentStatus } from '../../generated/prisma/enums';
 import { OrdersService } from '../orders/orders.service';
 import { JwtPayload } from '../../shared/types/jwt-payload.type';
+import { formatDecimal } from '../../shared/utils/decimal.util';
 import { PayOrderDto } from './dto/pay-order.dto';
 import { PaymentResponseDto } from './dto/payment-response.dto';
 import { RefundPaymentDto } from './dto/refund-payment.dto';
@@ -29,7 +30,7 @@ function toPaymentResponseDto(payment: Payment): PaymentResponseDto {
   return {
     id: payment.id,
     orderId: payment.orderId,
-    amount: String(payment.amount),
+    amount: formatDecimal(payment.amount),
     method: payment.method,
     status: payment.status,
     createdAt: payment.createdAt,

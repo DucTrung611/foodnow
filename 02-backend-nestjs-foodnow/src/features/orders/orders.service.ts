@@ -25,6 +25,7 @@ import {
   buildPaginatedResult,
   paginate,
 } from '../../shared/utils/pagination.util';
+import { formatDecimal } from '../../shared/utils/decimal.util';
 import { haversineDistanceMeters } from '../../shared/utils/geo.util';
 import { AddCartItemDto } from './dto/add-cart-item.dto';
 import { CancelOrderDto } from './dto/cancel-order.dto';
@@ -117,14 +118,14 @@ export function toOrderItemResponseDto(item: {
     id: item.id,
     menuItemId: item.menuItemId,
     itemNameSnapshot: item.itemNameSnapshot,
-    itemPriceSnapshot: String(item.itemPriceSnapshot),
+    itemPriceSnapshot: formatDecimal(item.itemPriceSnapshot),
     quantity: item.quantity,
-    subtotal: String(item.subtotal),
+    subtotal: formatDecimal(item.subtotal),
     note: item.note,
     options: item.options.map((option) => ({
       id: option.id,
       optionNameSnapshot: option.optionNameSnapshot,
-      optionPriceSnapshot: String(option.optionPriceSnapshot),
+      optionPriceSnapshot: formatDecimal(option.optionPriceSnapshot),
     })),
   };
 }
@@ -138,10 +139,10 @@ function toOrderListItemDto(order: OrderWithItems): OrderResponseDto {
     driverId: order.driverId,
     deliveryAddressId: order.deliveryAddressId,
     status: order.status,
-    subtotal: String(order.subtotal),
-    deliveryFee: String(order.deliveryFee),
-    discountAmount: String(order.discountAmount),
-    totalAmount: String(order.totalAmount),
+    subtotal: formatDecimal(order.subtotal),
+    deliveryFee: formatDecimal(order.deliveryFee),
+    discountAmount: formatDecimal(order.discountAmount),
+    totalAmount: formatDecimal(order.totalAmount),
     version: order.version,
     placedAt: order.placedAt,
     items: order.items.map(toOrderItemResponseDto),

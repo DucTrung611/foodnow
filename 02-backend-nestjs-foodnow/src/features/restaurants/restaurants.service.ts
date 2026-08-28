@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PaginatedResult } from '../../shared/types/paginated-result.type';
+import { formatDecimal } from '../../shared/utils/decimal.util';
 import {
   buildPaginatedResult,
   paginate,
@@ -61,7 +62,7 @@ export function toRestaurantResponseDto(
     lng: row.lng,
     openingHours: row.opening_hours,
     status: row.status,
-    avgRating: String(row.avg_rating),
+    avgRating: formatDecimal(row.avg_rating),
     distanceMeters: row.distance_meters,
     isOpen: isRestaurantOpen(row.opening_hours),
     version: row.version,
@@ -76,7 +77,7 @@ function toMenuItemOptionDto(option: {
   return {
     id: option.id,
     name: option.name,
-    extraPrice: String(option.extraPrice),
+    extraPrice: formatDecimal(option.extraPrice),
   };
 }
 
@@ -106,7 +107,7 @@ export function toMenuItemResponseDto(
     restaurantId: item.restaurantId,
     categoryId: item.categoryId,
     name: item.name,
-    basePrice: String(item.basePrice),
+    basePrice: formatDecimal(item.basePrice),
     isAvailable: item.isAvailable,
     optionGroups: item.optionGroups.map(toMenuItemOptionGroupDto),
     version: item.version,

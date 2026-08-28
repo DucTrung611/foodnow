@@ -10,6 +10,7 @@ import { PromotionDiscountType } from '../../generated/prisma/enums';
 import { RestaurantsService } from '../restaurants/restaurants.service';
 import { JwtPayload } from '../../shared/types/jwt-payload.type';
 import { Role } from '../../shared/types/role.enum';
+import { formatDecimal } from '../../shared/utils/decimal.util';
 import { CreatePromotionDto } from './dto/create-promotion.dto';
 import { PromotionResponseDto } from './dto/promotion-response.dto';
 import { ValidatePromotionDto } from './dto/validate-promotion.dto';
@@ -22,11 +23,15 @@ function toPromotionResponseDto(promo: Promotion): PromotionResponseDto {
     code: promo.code,
     restaurantId: promo.restaurantId,
     discountType: promo.discountType,
-    discountValue: String(promo.discountValue),
+    discountValue: formatDecimal(promo.discountValue),
     minOrderAmount:
-      promo.minOrderAmount === null ? null : String(promo.minOrderAmount),
+      promo.minOrderAmount === null
+        ? null
+        : formatDecimal(promo.minOrderAmount),
     maxDiscountAmount:
-      promo.maxDiscountAmount === null ? null : String(promo.maxDiscountAmount),
+      promo.maxDiscountAmount === null
+        ? null
+        : formatDecimal(promo.maxDiscountAmount),
     usageLimit: promo.usageLimit,
     usageLimitPerUser: promo.usageLimitPerUser,
     startsAt: promo.startsAt,
