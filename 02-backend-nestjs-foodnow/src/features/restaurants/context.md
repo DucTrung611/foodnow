@@ -15,6 +15,7 @@ Geo search + detail + menu for customers, and restaurant/category/menu-item CRUD
 
 ## Routes
 - `GET /restaurants` — Public. Geo search via PostGIS `ST_DWithin`/`ST_Distance`. `lat`/`lng` are **required** query params (no default) — a missing value fails `RestaurantSearchQueryDto` validation and the global pipe/filter auto-resolve it to `COMMON_9000`, matching the spec's "Missing lat/lng → COMMON_9000" without any manual check. `radius` defaults to `restaurant.defaultSearchRadiusMeters` (env `RESTAURANT_DEFAULT_RADIUS_METERS`, default 5000m). `status` defaults to `ACTIVE`. `sort` supports `distance` (default), `-avgRating`/`avgRating`, `-createdAt`/`createdAt`.
+- `GET /restaurants/me` — VENDOR. Resolves the caller's own restaurant by `owner_id` server-side (404 `RESTAURANT_2001` if they don't own one). Registered before `GET /restaurants/:id` in the controller so Express doesn't match `me` as an `:id`. Added because the frontend's vendor menu page was previously guessing a restaurant id from the vendor's *user* id (UX-AUDIT-REPORT.md §2.3).
 - `GET /restaurants/:id` — Public. 404 `RESTAURANT_2001` if missing.
 - `GET /restaurants/:id/menu` — Public. Categories → menu items → option groups → options, one tree.
 - `POST /restaurants` — VENDOR. Always created `status: PENDING`, `ownerId` from the JWT.
@@ -32,4 +33,4 @@ Geo search + detail + menu for customers, and restaurant/category/menu-item CRUD
 
 ## Deferred (not in this pass)
 - No dedicated endpoints for creating/editing `menu_item_option_groups`/`menu_item_options` — not in `API_SPEC.md`'s endpoint table or the frontend's `restaurants.service.ts`. The read path (`GET /restaurants/:id/menu`) already returns them, so a future PR only needs to add the write endpoints + DTOs.
-- No image upload wiring for restaurant/menu-item photos (spec's generic `multipart/form-data` upload endpoint isn't feature-specific yet).
+- Restaurant/menu-item photos: `image_url` (nullable string) exists on both tables now — `create`/`update` DTOs accept it, response DTOs return it, and the frontend renders it with an emoji-icon fallback when absent (UX-AUDIT-REPORT.md's "add photos" fix). What's still missing is the spec's generic `multipart/form-data` upload endpoint — a vendor can only set `imageUrl` by pasting a URL, not uploading a file. Seed data (`prisma/seed.ts`) backfills all 6 demo restaurants with `picsum.photos` placeholder URLs; menu items are left `null` (not seeded per-item).

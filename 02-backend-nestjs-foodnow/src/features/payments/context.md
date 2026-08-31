@@ -15,11 +15,18 @@ touching `PaymentsService`'s call sites.
 - `PaymentsService` (exported via `payments.module.ts`)
   - `payOrder(user, orderId, idempotencyKey, dto)` — idempotent charge
   - `getPaymentById(user, id)`
+  - `getPaymentByOrderId(user, orderId)` — `null` if no charge attempt yet
   - `refundPayment(id, dto)`
 
 ## Routes
 - `POST /orders/:id/pay` (`OrderPaymentController`, CUSTOMER) — requires
   `Idempotency-Key` header (UUID)
+- `GET /orders/:id/payment` (`OrderPaymentController`, CUSTOMER) — read model
+  for the order-detail page to durably tell paid from unpaid across a
+  reload; returns `null` before the first charge attempt rather than 404.
+  Added because the frontend previously had no way to know an order was
+  already paid except the mutation's own in-memory result, so the payment
+  form kept reappearing after a successful charge (UX-AUDIT-REPORT.md §1.3).
 - `GET /payments/:id` (`PaymentsController`, CUSTOMER/ADMIN)
 - `POST /payments/:id/refund` (`PaymentsController`, ADMIN)
 

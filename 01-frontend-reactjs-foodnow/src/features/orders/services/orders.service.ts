@@ -1,8 +1,9 @@
 import { apiClient, unwrap, unwrapPaginated } from '@/shared/services/client';
-import type { CreateOrderPayload, Order, OrderListParams, UpdateOrderStatusPayload } from '../types/orders.types';
+import type { CreateOrderPayload, Order, OrderListParams, OrderQuote, UpdateOrderStatusPayload } from '../types/orders.types';
 
 export const ordersService = {
   create: (payload: CreateOrderPayload) => unwrap<Order>(apiClient.post('/orders', payload)),
+  quote: (payload: CreateOrderPayload) => unwrap<OrderQuote>(apiClient.post('/orders/quote', payload)),
   list: (params: OrderListParams) => unwrapPaginated<Order>(apiClient.get('/orders', { params })),
   getById: (id: string) => unwrap<Order>(apiClient.get(`/orders/${id}`)),
   updateStatus: (id: string, payload: UpdateOrderStatusPayload) =>

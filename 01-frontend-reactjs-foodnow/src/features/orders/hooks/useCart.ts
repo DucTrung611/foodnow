@@ -9,11 +9,14 @@ import type { AddCartItemPayload, UpdateCartItemPayload } from '../types/orders.
 const CART_KEY = ['cart'] as const;
 
 export const useCart = () => {
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  // Cart is CUSTOMER-only server-side (403 otherwise) — a non-customer role
+  // browsing the shared customer layout (e.g. admin landing on "/") must
+  // not fire this query at all.
+  const isCustomer = useAuthStore((s) => s.isAuthenticated && s.user?.role === 'CUSTOMER');
   return useQuery({
     queryKey: CART_KEY,
     queryFn: cartService.get,
-    enabled: isAuthenticated,
+    enabled: isCustomer,
   });
 };
 
@@ -22,7 +25,10 @@ export const useAddCartItem = () => {
   const showToast = useNotificationStore((s) => s.showToast);
   return useMutation({
     mutationFn: (payload: AddCartItemPayload) => cartService.addItem(payload),
-    onSuccess: (cart) => queryClient.setQueryData(CART_KEY, cart),
+    onSuccess: (cart) => {
+      queryClient.setQueryData(CART_KEY, cart);
+      showToast('success', 'Đã thêm vào giỏ hàng');
+    },
     onError: (error) => {
       showToast('error', error instanceof ApiError ? mapErrorCode(error.code) : 'Không thể thêm món vào giỏ');
     },

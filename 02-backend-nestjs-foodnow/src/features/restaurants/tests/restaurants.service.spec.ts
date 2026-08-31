@@ -29,6 +29,7 @@ function makeRestaurantRow(
     owner_id: 'owner-1',
     name: 'Pho 24',
     description: null,
+    image_url: null,
     opening_hours: OPEN_ALL_WEEK,
     status: RestaurantStatus.ACTIVE,
     avg_rating: '4.50',
@@ -50,8 +51,10 @@ describe('RestaurantsService', () => {
     repository = {
       createRestaurant: jest.fn(),
       findById: jest.fn(),
+      findByOwnerId: jest.fn(),
       updateRestaurant: jest.fn(),
       search: jest.fn(),
+      findAllForAdmin: jest.fn(),
       createCategory: jest.fn(),
       countCategories: jest.fn(),
       findCategoryById: jest.fn(),
@@ -170,6 +173,46 @@ describe('RestaurantsService', () => {
     });
   });
 
+  describe('getMine', () => {
+    it('throws RESTAURANT_2001 when the caller owns no restaurant', async () => {
+      repository.findByOwnerId.mockResolvedValue(null);
+
+      await expect(service.getMine('owner-1')).rejects.toMatchObject({
+        response: { code: 'RESTAURANT_2001' },
+      });
+    });
+
+    it('resolves the caller\'s own restaurant by owner id', async () => {
+      repository.findByOwnerId.mockResolvedValue(
+        makeRestaurantRow({ owner_id: 'owner-1' }),
+      );
+
+      const result = await service.getMine('owner-1');
+
+      expect(repository.findByOwnerId).toHaveBeenCalledWith('owner-1');
+      expect(result.ownerId).toBe('owner-1');
+    });
+  });
+
+  describe('listForAdmin', () => {
+    it('paginates without requiring lat/lng, unlike search()', async () => {
+      repository.findAllForAdmin.mockResolvedValue({
+        rows: [makeRestaurantRow()],
+        total: 1,
+      });
+
+      const result = await service.listForAdmin({ search: 'Pho' });
+
+      expect(repository.findAllForAdmin).toHaveBeenCalledWith({
+        search: 'Pho',
+        skip: 0,
+        take: 20,
+      });
+      expect(result.data).toHaveLength(1);
+      expect(result.meta.total).toBe(1);
+    });
+  });
+
   describe('search', () => {
     it('defaults status to ACTIVE, radius from config, page 1 / limit 20', async () => {
       repository.search.mockResolvedValue({ rows: [], total: 0 });
@@ -237,6 +280,7 @@ describe('RestaurantsService', () => {
               categoryId: 'cat-1',
               name: 'Pho Bo',
               basePrice: '45000.00' as never,
+              imageUrl: null,
               isAvailable: true,
               version: 0,
               createdAt: new Date('2026-01-01'),
@@ -282,6 +326,7 @@ describe('RestaurantsService', () => {
               categoryId: 'cat-1',
               name: 'Pho Bo',
               basePrice: '45000.00',
+              imageUrl: null,
               isAvailable: true,
               version: 0,
               optionGroups: [
@@ -424,6 +469,7 @@ describe('RestaurantsService', () => {
         categoryId: 'cat-1',
         name: 'Pho Bo',
         basePrice: '45000.00' as never,
+        imageUrl: null,
         isAvailable: true,
         version: 0,
         createdAt: new Date('2026-01-01'),
@@ -462,6 +508,7 @@ describe('RestaurantsService', () => {
         categoryId: 'cat-1',
         name: 'Pho Bo',
         basePrice: '45000.00' as never,
+        imageUrl: null,
         isAvailable: true,
         version: 0,
         createdAt: new Date('2026-01-01'),
@@ -479,6 +526,7 @@ describe('RestaurantsService', () => {
         categoryId: 'cat-1',
         name: 'Pho Bo',
         basePrice: '45000.00',
+        imageUrl: null,
         isAvailable: true,
         optionGroups: [],
         version: 0,
@@ -494,6 +542,7 @@ describe('RestaurantsService', () => {
         categoryId: 'cat-1',
         name: 'Pho Bo',
         basePrice: '45000.00' as never,
+        imageUrl: null,
         isAvailable: true,
         version: 0,
         createdAt: new Date('2026-01-01'),

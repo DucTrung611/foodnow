@@ -8,10 +8,15 @@ import type {
 } from '../types/delivery.types';
 
 export const deliveryService = {
+  getAvailability: () => unwrap<{ isAvailable: boolean }>(apiClient.get('/drivers/me/availability')),
+
   setAvailability: (isAvailable: boolean) =>
     unwrap<{ isAvailable: boolean }>(apiClient.patch('/drivers/me/availability', { isAvailable })),
 
   listAvailable: () => unwrap<AvailableDelivery[]>(apiClient.get('/deliveries/available')),
+
+  // `null` means the driver has no in-progress delivery right now.
+  getActive: () => unwrap<Delivery | null>(apiClient.get('/deliveries/active')),
 
   accept: (id: string) => unwrap<Delivery>(apiClient.post(`/deliveries/${id}/accept`)),
   pickup: (id: string) => unwrap<Delivery>(apiClient.post(`/deliveries/${id}/pickup`)),

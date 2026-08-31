@@ -11,14 +11,15 @@ import type { LoginPayload, RegisterPayload } from '../types/auth.types';
 export const useLogin = () => {
   const setAuth = useAuthStore((s) => s.setAuth);
   const showToast = useNotificationStore((s) => s.showToast);
-  const navigate = useNavigate();
 
   return useMutation({
     mutationFn: (payload: LoginPayload) => authService.login(payload),
-    onSuccess: ({ user, accessToken }) => {
-      setAuth(user, accessToken);
-      navigate(ROUTES.home);
-    },
+    // No navigate() here on purpose — LoginPage is always rendered under
+    // `GuestRoute`, which redirects to the right role's dashboard the
+    // instant `isAuthenticated` flips true (see its comment). A second,
+    // imperative redirect here raced that one and sometimes won with the
+    // wrong destination.
+    onSuccess: ({ user, accessToken }) => setAuth(user, accessToken),
     onError: (error) => {
       showToast('error', error instanceof ApiError ? mapErrorCode(error.code) : 'Đăng nhập thất bại');
     },

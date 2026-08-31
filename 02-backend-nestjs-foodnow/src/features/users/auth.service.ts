@@ -86,9 +86,21 @@ export class AuthService {
     return { accessToken, refreshToken, user: toUserResponseDto(user) };
   }
 
-  async refresh(
-    refreshToken: string | undefined,
-  ): Promise<{ accessToken: string; refreshToken: string }> {
+  /**
+   * Also returns `user` (not just tokens) — the refresh_token cookie is
+   * browser-wide, not per-tab, so a *different* tab logging in as a
+   * different account silently rewrites this cookie too. Without `user`
+   * here, a tab's next silent refresh would swap the token it holds in
+   * memory to a different identity while its UI kept showing the old one
+   * (UX-AUDIT-REPORT.md §0 "shared refresh token" — this is what the
+   * frontend now checks to detect and react to that instead of silently
+   * drifting).
+   */
+  async refresh(refreshToken: string | undefined): Promise<{
+    accessToken: string;
+    refreshToken: string;
+    user: UserResponseDto;
+  }> {
     if (!refreshToken) {
       throw new UnauthorizedException({
         code: 'AUTH_1001',
@@ -119,8 +131,17 @@ export class AuthService {
       });
     }
 
+    const user = await this.usersRepository.findById(payload.sub);
+    if (!user || user.status === UserStatus.SUSPENDED) {
+      throw new UnauthorizedException({
+        code: 'AUTH_1001',
+        message: 'Access token expired',
+      });
+    }
+
     await this.redisService.del(`${REFRESH_KEY_PREFIX}${payload.jti}`);
-    return this.issueTokens(payload.sub, payload.role);
+    const tokens = await this.issueTokens(payload.sub, payload.role);
+    return { ...tokens, user: toUserResponseDto(user) };
   }
 
   async logout(refreshToken: string | undefined): Promise<void> {

@@ -20,8 +20,10 @@ export function usePayOrder(orderId: string) {
 
   return useMutation({
     mutationFn: (payload: PayOrderPayload) => paymentsService.pay(orderId, payload, idempotencyKey),
-    onSuccess: () => {
+    onSuccess: (payment) => {
       queryClient.invalidateQueries({ queryKey: ['orders', 'detail', orderId] });
+      queryClient.setQueryData(['payments', 'byOrder', orderId], payment);
+      showToast('success', payment.status === 'PAID' ? 'Thanh toán thành công' : 'Đã ghi nhận thanh toán');
     },
     onError: (error) => {
       showToast('error', error instanceof ApiError ? mapErrorCode(error.code) : 'Thanh toán thất bại');

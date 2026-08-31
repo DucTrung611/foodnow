@@ -6,7 +6,9 @@ import { CustomerLayout } from '@/app/layouts/CustomerLayout';
 import { VendorLayout } from '@/app/layouts/VendorLayout';
 import { DriverLayout } from '@/app/layouts/DriverLayout';
 import { AdminLayout } from '@/app/layouts/AdminLayout';
+import { GuestRoute } from './GuestRoute';
 import { ProtectedRoute } from './ProtectedRoute';
+import { RouteErrorBoundary } from './RouteErrorBoundary';
 import { ROUTES } from './routes.config';
 
 const HomePage = lazy(() => import('@/features/restaurants').then((m) => ({ default: m.HomePage })));
@@ -41,57 +43,66 @@ function withSuspense(element: ReactElement): ReactNode {
 
 export const router = createBrowserRouter([
   {
-    element: <CustomerLayout />,
+    // Pathless root: errorElement here catches thrown render errors from any
+    // descendant route AND unmatched paths (React Router renders those as a
+    // 404 ErrorResponse through the same mechanism) — one boundary handles
+    // both instead of falling through to the raw dev error screen.
+    errorElement: <RouteErrorBoundary />,
     children: [
-      { path: ROUTES.home, element: withSuspense(<HomePage />) },
-      { path: ROUTES.login, element: withSuspense(<LoginPage />) },
-      { path: ROUTES.register, element: withSuspense(<RegisterPage />) },
-      { path: ROUTES.restaurants, element: withSuspense(<RestaurantListPage />) },
-      { path: '/restaurants/:id', element: withSuspense(<RestaurantDetailPage />) },
-      { path: ROUTES.profile, element: <ProtectedRoute>{withSuspense(<ProfilePage />)}</ProtectedRoute> },
       {
-        path: ROUTES.checkout,
-        element: <ProtectedRoute roles={['CUSTOMER']}>{withSuspense(<CheckoutPage />)}</ProtectedRoute>,
+        element: <CustomerLayout />,
+        children: [
+          { path: ROUTES.home, element: withSuspense(<HomePage />) },
+          { path: ROUTES.login, element: <GuestRoute>{withSuspense(<LoginPage />)}</GuestRoute> },
+          { path: ROUTES.register, element: <GuestRoute>{withSuspense(<RegisterPage />)}</GuestRoute> },
+          { path: ROUTES.restaurants, element: withSuspense(<RestaurantListPage />) },
+          { path: '/restaurants/:id', element: withSuspense(<RestaurantDetailPage />) },
+          { path: ROUTES.profile, element: <ProtectedRoute>{withSuspense(<ProfilePage />)}</ProtectedRoute> },
+          {
+            path: ROUTES.checkout,
+            element: <ProtectedRoute roles={['CUSTOMER']}>{withSuspense(<CheckoutPage />)}</ProtectedRoute>,
+          },
+          { path: ROUTES.orders, element: <ProtectedRoute>{withSuspense(<OrderListPage />)}</ProtectedRoute> },
+          { path: '/orders/:id', element: <ProtectedRoute>{withSuspense(<OrderDetailPage />)}</ProtectedRoute> },
+          {
+            path: '/orders/:id/tracking',
+            element: <ProtectedRoute roles={['CUSTOMER']}>{withSuspense(<OrderTrackingPage />)}</ProtectedRoute>,
+          },
+        ],
       },
-      { path: ROUTES.orders, element: <ProtectedRoute>{withSuspense(<OrderListPage />)}</ProtectedRoute> },
-      { path: '/orders/:id', element: <ProtectedRoute>{withSuspense(<OrderDetailPage />)}</ProtectedRoute> },
       {
-        path: '/orders/:id/tracking',
-        element: <ProtectedRoute roles={['CUSTOMER']}>{withSuspense(<OrderTrackingPage />)}</ProtectedRoute>,
+        element: (
+          <ProtectedRoute roles={['VENDOR']}>
+            <VendorLayout />
+          </ProtectedRoute>
+        ),
+        children: [
+          { path: ROUTES.vendorOrders, element: withSuspense(<VendorOrdersPage />) },
+          { path: ROUTES.vendorMenu, element: withSuspense(<VendorMenuPage />) },
+        ],
       },
-    ],
-  },
-  {
-    element: (
-      <ProtectedRoute roles={['VENDOR']}>
-        <VendorLayout />
-      </ProtectedRoute>
-    ),
-    children: [
-      { path: ROUTES.vendorOrders, element: withSuspense(<VendorOrdersPage />) },
-      { path: ROUTES.vendorMenu, element: withSuspense(<VendorMenuPage />) },
-    ],
-  },
-  {
-    element: (
-      <ProtectedRoute roles={['DRIVER']}>
-        <DriverLayout />
-      </ProtectedRoute>
-    ),
-    children: [
-      { path: ROUTES.driverOffers, element: withSuspense(<DriverOffersPage />) },
-      { path: ROUTES.driverEarnings, element: withSuspense(<DriverEarningsPage />) },
-    ],
-  },
-  {
-    element: (
-      <ProtectedRoute roles={['ADMIN']}>
-        <AdminLayout />
-      </ProtectedRoute>
-    ),
-    children: [
-      { path: ROUTES.adminOrders, element: withSuspense(<AdminOrdersPage />) },
-      { path: ROUTES.adminUsers, element: withSuspense(<AdminUsersPage />) },
+      {
+        element: (
+          <ProtectedRoute roles={['DRIVER']}>
+            <DriverLayout />
+          </ProtectedRoute>
+        ),
+        children: [
+          { path: ROUTES.driverOffers, element: withSuspense(<DriverOffersPage />) },
+          { path: ROUTES.driverEarnings, element: withSuspense(<DriverEarningsPage />) },
+        ],
+      },
+      {
+        element: (
+          <ProtectedRoute roles={['ADMIN']}>
+            <AdminLayout />
+          </ProtectedRoute>
+        ),
+        children: [
+          { path: ROUTES.adminOrders, element: withSuspense(<AdminOrdersPage />) },
+          { path: ROUTES.adminUsers, element: withSuspense(<AdminUsersPage />) },
+        ],
+      },
     ],
   },
 ]);

@@ -51,6 +51,7 @@ const RESTAURANT: RestaurantResponseDto = {
   ownerId: 'owner-1',
   name: 'Pho 24',
   description: null,
+  imageUrl: null,
   lat: 21.0245,
   lng: 105.8412,
   openingHours: {} as never,

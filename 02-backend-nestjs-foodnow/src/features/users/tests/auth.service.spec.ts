@@ -19,6 +19,7 @@ describe('AuthService', () => {
     usersRepository = {
       findByEmailOrPhone: jest.fn(),
       findByEmail: jest.fn(),
+      findById: jest.fn(),
       createUser: jest.fn(),
     } as unknown as jest.Mocked<UsersRepository>;
 
@@ -187,6 +188,71 @@ describe('AuthService', () => {
         'EX',
         expect.any(Number),
       );
+    });
+  });
+
+  describe('refresh', () => {
+    const refreshPayload = { sub: 'user-id', role: Role.CUSTOMER, jti: 'jti-1' };
+
+    it('throws AUTH_1001 when no refresh token is given', async () => {
+      await expect(authService.refresh(undefined)).rejects.toMatchObject(
+        new UnauthorizedException({
+          code: 'AUTH_1001',
+          message: 'Access token expired',
+        }),
+      );
+    });
+
+    it('throws AUTH_1001 when the stored JTI does not match (revoked/reused token)', async () => {
+      jwtService.verifyAsync.mockResolvedValue(refreshPayload as never);
+      redisService.get.mockResolvedValue(null);
+
+      await expect(authService.refresh('token')).rejects.toMatchObject(
+        new UnauthorizedException({
+          code: 'AUTH_1001',
+          message: 'Access token expired',
+        }),
+      );
+    });
+
+    it('throws AUTH_1001 when the user backing the token was suspended after the token was issued', async () => {
+      jwtService.verifyAsync.mockResolvedValue(refreshPayload as never);
+      redisService.get.mockResolvedValue('user-id');
+      usersRepository.findById.mockResolvedValue({
+        id: 'user-id',
+        status: UserStatus.SUSPENDED,
+      } as never);
+
+      await expect(authService.refresh('token')).rejects.toMatchObject(
+        new UnauthorizedException({
+          code: 'AUTH_1001',
+          message: 'Access token expired',
+        }),
+      );
+    });
+
+    // The frontend compares this against its currently-held user to detect
+    // a cross-tab identity swap on the shared refresh cookie — it must
+    // reflect whoever the token now actually belongs to, not be omitted.
+    it('returns the current user alongside a fresh token pair', async () => {
+      jwtService.verifyAsync.mockResolvedValue(refreshPayload as never);
+      redisService.get.mockResolvedValue('user-id');
+      usersRepository.findById.mockResolvedValue({
+        id: 'user-id',
+        email: 'a@test.com',
+        phone: '0912345678',
+        fullName: 'A',
+        avatarUrl: null,
+        status: UserStatus.ACTIVE,
+        role: Role.CUSTOMER,
+        createdAt: new Date(),
+      } as never);
+
+      const result = await authService.refresh('token');
+
+      expect(result.accessToken).toBe('signed-token');
+      expect(result.user).toMatchObject({ id: 'user-id', email: 'a@test.com' });
+      expect(redisService.del).toHaveBeenCalledWith('refresh:jti-1');
     });
   });
 });

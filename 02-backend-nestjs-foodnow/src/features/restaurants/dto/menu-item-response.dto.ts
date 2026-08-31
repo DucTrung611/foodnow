@@ -19,6 +19,7 @@ export class MenuItemResponseDto {
   categoryId: string;
   name: string;
   basePrice: string;
+  imageUrl: string | null;
   isAvailable: boolean;
   optionGroups: MenuItemOptionGroupResponseDto[];
   version: number;

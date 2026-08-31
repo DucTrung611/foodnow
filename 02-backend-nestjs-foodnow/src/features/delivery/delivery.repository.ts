@@ -42,6 +42,18 @@ export class DeliveryRepository {
     return this.prisma.delivery.findUnique({ where: { orderId } });
   }
 
+  /** The driver's current in-progress delivery, if any — used to resume the
+   * pickup/complete flow after accepting an order (or after a page reload). */
+  findActiveByDriverId(driverId: string): Promise<Delivery | null> {
+    return this.prisma.delivery.findFirst({
+      where: {
+        driverId,
+        status: { in: [DeliveryStatus.ASSIGNED, DeliveryStatus.PICKED_UP] },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
   async findAssignedOrderIds(orderIds: string[]): Promise<Set<string>> {
     if (orderIds.length === 0) return new Set();
     const rows = await this.prisma.delivery.findMany({

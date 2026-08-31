@@ -22,3 +22,9 @@ export type AdminUserListParams = {
 export type UpdateUserStatusPayload = {
   status: UserStatus;
 };
+
+export type AdminRestaurantListParams = {
+  page?: number;
+  limit?: number;
+  search?: string;
+};

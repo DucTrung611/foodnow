@@ -18,6 +18,11 @@ export class DeliveriesController {
     return this.deliveryService.listAvailableDeliveries(user.sub);
   }
 
+  @Get('active')
+  getActive(@CurrentUser() user: JwtPayload) {
+    return this.deliveryService.getActiveDelivery(user.sub);
+  }
+
   @Post(':id/accept')
   accept(@CurrentUser() user: JwtPayload, @Param('id') orderId: string) {
     return this.deliveryService.acceptDelivery(user, orderId);

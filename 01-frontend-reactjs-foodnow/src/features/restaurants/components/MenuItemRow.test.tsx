@@ -14,6 +14,7 @@ const SIMPLE_ITEM: MenuItem = {
   categoryId: 'cat-1',
   name: 'Pho Bo',
   basePrice: '45000.00',
+  imageUrl: null,
   isAvailable: true,
   version: 0,
   optionGroups: [],

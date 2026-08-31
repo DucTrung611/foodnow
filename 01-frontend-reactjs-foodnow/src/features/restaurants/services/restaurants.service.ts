@@ -14,6 +14,8 @@ export const restaurantsService = {
 
   getById: (id: string) => unwrap<Restaurant>(apiClient.get(`/restaurants/${id}`)),
 
+  getMine: () => unwrap<Restaurant>(apiClient.get('/restaurants/me')),
+
   getMenu: (id: string) => unwrap<RestaurantMenu>(apiClient.get(`/restaurants/${id}/menu`)),
 
   register: (payload: CreateRestaurantPayload) =>

@@ -18,6 +18,7 @@ export function usePaymentSocket(orderId: string) {
     const handlePaymentUpdated = (payload: PaymentUpdatedPayload) => {
       if (payload.orderId !== orderId) return;
       queryClient.invalidateQueries({ queryKey: ['orders', 'detail', orderId] });
+      queryClient.invalidateQueries({ queryKey: ['payments', 'byOrder', orderId] });
     };
 
     socket.on('payment:updated', handlePaymentUpdated);

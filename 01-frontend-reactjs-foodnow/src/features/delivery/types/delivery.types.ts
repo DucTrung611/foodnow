@@ -1,11 +1,7 @@
 import type { GeoPoint } from '@/shared/utils/geo';
 
-/**
- * ASSIGNED/PICKED_UP/COMPLETED are inferred from the accept/pickup/complete
- * REST actions (API_SPEC.md §6 Delivery) — confirm against the backend
- * Prisma enum once the delivery module is implemented there.
- */
-export type DeliveryStatus = 'ASSIGNED' | 'PICKED_UP' | 'COMPLETED' | 'CANCELLED';
+/** Confirmed against the backend's actual `DeliveryStatus` Prisma enum (delivery/context.md) — the terminal state is `DELIVERED`, not `COMPLETED`. */
+export type DeliveryStatus = 'ASSIGNED' | 'PICKED_UP' | 'DELIVERED' | 'CANCELLED';
 
 export type Delivery = {
   id: string;
@@ -49,8 +45,9 @@ export type DriverEarningEntry = {
   createdAt: string;
 };
 
+/** Matches backend `EarningsSummaryResponseDto` (features/earnings) exactly — field names are not the same as the naive "totalEarned/pendingPayout/entries" guess this used to have, which MSW-mocked tests hid until the real endpoint 200'd with a shape mismatch and crashed the page. */
 export type DriverEarningsSummary = {
-  totalEarned: string;
-  pendingPayout: string;
-  entries: DriverEarningEntry[];
+  totalPendingAmount: string;
+  totalPaidAmount: string;
+  earnings: DriverEarningEntry[];
 };

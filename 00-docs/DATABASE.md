@@ -31,9 +31,9 @@
 ### Feature: Restaurant & Menu
 | Entity | Fields | Indexes |
 |---|---|---|
-| restaurants | id (PK), owner_id (FK→users), name, description, location (geography), opening_hours (jsonb), status (enum), avg_rating (decimal), version (int) | idx_restaurants_owner, idx_restaurants_location (GIST) |
+| restaurants | id (PK), owner_id (FK→users), name, description, image_url (nullable), location (geography), opening_hours (jsonb), status (enum), avg_rating (decimal), version (int) | idx_restaurants_owner, idx_restaurants_location (GIST) |
 | categories | id (PK), restaurant_id (FK), name, sort_order | idx_categories_restaurant |
-| menu_items | id (PK), restaurant_id (FK), category_id (FK), name, base_price (decimal 10,2), is_available (bool), version (int) | idx_menu_items_restaurant, idx_menu_items_category |
+| menu_items | id (PK), restaurant_id (FK), category_id (FK), name, base_price (decimal 10,2), image_url (nullable), is_available (bool), version (int) | idx_menu_items_restaurant, idx_menu_items_category |
 | menu_item_option_groups | id (PK), menu_item_id (FK), name, is_required, min_select, max_select | idx_option_groups_menu_item |
 | menu_item_options | id (PK), option_group_id (FK), name, extra_price (decimal) | idx_options_group |
 

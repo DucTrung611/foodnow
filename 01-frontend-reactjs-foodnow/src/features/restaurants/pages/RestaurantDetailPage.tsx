@@ -21,6 +21,13 @@ export function RestaurantDetailPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-10">
+      {restaurant.imageUrl && (
+        <img
+          src={restaurant.imageUrl}
+          alt={restaurant.name}
+          className="mb-6 aspect-[16/7] w-full rounded-ticket object-cover"
+        />
+      )}
       <div className="flex items-center justify-between">
         <h1 className="font-display text-2xl font-bold text-ink">{restaurant.name}</h1>
         <Badge variant={restaurant.isOpen ? 'success' : 'neutral'}>{restaurant.isOpen ? 'Đang mở' : 'Đã đóng'}</Badge>

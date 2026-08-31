@@ -24,7 +24,7 @@ describe('useLogin', () => {
     useAuthStore.getState().clearAuth();
   });
 
-  it('stores the session in auth.store and navigates home on success', async () => {
+  it('stores the session in auth.store on success (redirect is GuestRoute\'s job, not this hook\'s — see useAuth.ts)', async () => {
     server.use(
       http.post(`${BASE_URL}/auth/login`, () =>
         HttpResponse.json({
@@ -53,7 +53,7 @@ describe('useLogin', () => {
 
     expect(useAuthStore.getState().accessToken).toBe('test-access-token');
     expect(useAuthStore.getState().user?.email).toBe('a@example.com');
-    expect(navigateMock).toHaveBeenCalledWith('/');
+    expect(navigateMock).not.toHaveBeenCalled();
   });
 
   it('does not authenticate on AUTH_1002 (wrong credentials)', async () => {

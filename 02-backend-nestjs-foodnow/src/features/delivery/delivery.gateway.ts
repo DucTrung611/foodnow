@@ -10,6 +10,10 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import {
+  REALTIME_CORS,
+  REALTIME_NAMESPACE,
+} from '../../shared/constants/websocket.constant';
 import { JwtPayload } from '../../shared/types/jwt-payload.type';
 import { OrdersService } from '../orders/orders.service';
 import { UsersService } from '../users/users.service';
@@ -38,7 +42,7 @@ type AuthenticatedSocket = Omit<Socket, 'data'> & {
  * reuses the same plain helpers `DeliveryService.pushLocation` uses (see
  * `utils/location-push.util.ts`) instead.
  */
-@WebSocketGateway({ namespace: 'realtime' })
+@WebSocketGateway({ namespace: REALTIME_NAMESPACE, cors: REALTIME_CORS })
 export class DeliveryGateway implements OnGatewayConnection {
   @WebSocketServer()
   server: Server;

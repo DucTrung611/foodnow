@@ -71,10 +71,14 @@ describe('AuthController', () => {
   });
 
   describe('refresh', () => {
-    it('reads the refresh token from the cookie, not the body, and rotates it', async () => {
+    it('reads the refresh token from the cookie, not the body, rotates it, and returns the user', async () => {
+      // `user` lets the frontend detect a cross-tab identity swap (see
+      // auth.service.ts's refresh() comment) — it must survive the
+      // controller pass-through, not just the service layer.
       authService.refresh.mockResolvedValue({
         accessToken: 'new-access-token',
         refreshToken: 'new-refresh-token',
+        user: { id: 'user-1' } as never,
       });
       const req = {
         cookies: { refreshToken: 'old-refresh-token' },
@@ -83,7 +87,7 @@ describe('AuthController', () => {
       const result = await controller.refresh(req, res);
 
       expect(authService.refresh).toHaveBeenCalledWith('old-refresh-token');
-      expect(result).toEqual({ accessToken: 'new-access-token' });
+      expect(result).toEqual({ accessToken: 'new-access-token', user: { id: 'user-1' } });
       expect(res.cookie).toHaveBeenCalledWith(
         'refreshToken',
         'new-refresh-token',
@@ -95,6 +99,7 @@ describe('AuthController', () => {
       authService.refresh.mockResolvedValue({
         accessToken: 'x',
         refreshToken: 'y',
+        user: { id: 'user-1' } as never,
       });
       const req = { cookies: {} } as unknown as Request;
 

@@ -30,6 +30,13 @@ export class RestaurantsController {
     return this.restaurantsService.search(query);
   }
 
+  @Get('me')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.VENDOR)
+  getMine(@CurrentUser() user: JwtPayload) {
+    return this.restaurantsService.getMine(user.sub);
+  }
+
   @Get(':id')
   getById(@Param('id') id: string) {
     return this.restaurantsService.getById(id);

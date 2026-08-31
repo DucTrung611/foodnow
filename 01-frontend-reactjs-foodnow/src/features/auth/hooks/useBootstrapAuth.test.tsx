@@ -16,20 +16,20 @@ describe('useBootstrapAuth', () => {
   it('restores the session when the httpOnly refresh cookie is still valid', async () => {
     server.use(
       http.post(`${BASE_URL}/auth/refresh`, () =>
-        HttpResponse.json({ success: true, data: { accessToken: 'fresh-access-token' } }),
-      ),
-      http.get(`${BASE_URL}/users/me`, () =>
         HttpResponse.json({
           success: true,
           data: {
-            id: 'user-1',
-            email: 'a@example.com',
-            phone: '0900000000',
-            fullName: 'Nguyễn Văn A',
-            avatarUrl: null,
-            role: 'CUSTOMER',
-            status: 'ACTIVE',
-            createdAt: '2026-01-01T00:00:00.000Z',
+            accessToken: 'fresh-access-token',
+            user: {
+              id: 'user-1',
+              email: 'a@example.com',
+              phone: '0900000000',
+              fullName: 'Nguyễn Văn A',
+              avatarUrl: null,
+              role: 'CUSTOMER',
+              status: 'ACTIVE',
+              createdAt: '2026-01-01T00:00:00.000Z',
+            },
           },
         }),
       ),

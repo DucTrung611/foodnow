@@ -71,6 +71,14 @@ export type CreateOrderPayload = {
   items: CreateOrderItemPayload[];
 };
 
+/** Same shape `POST /orders/quote` returns — subtotal/deliveryFee/discountAmount/totalAmount, no write. */
+export type OrderQuote = {
+  subtotal: string;
+  deliveryFee: string;
+  discountAmount: string;
+  totalAmount: string;
+};
+
 /** Client must send the version it last read — API_SPEC.md §7 optimistic lock contract. */
 export type UpdateOrderStatusPayload = {
   status: OrderStatus;

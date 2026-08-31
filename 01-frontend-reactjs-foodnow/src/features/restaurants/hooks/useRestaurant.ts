@@ -8,6 +8,12 @@ export const useRestaurant = (id: string) =>
     enabled: Boolean(id),
   });
 
+export const useMyRestaurant = () =>
+  useQuery({
+    queryKey: ['restaurants', 'mine'],
+    queryFn: () => restaurantsService.getMine(),
+  });
+
 export const useRestaurantMenu = (id: string) =>
   useQuery({
     queryKey: ['restaurants', 'menu', id],

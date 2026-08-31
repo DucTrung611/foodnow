@@ -38,12 +38,22 @@ export function MenuItemRow({ item }: MenuItemRowProps) {
 
   return (
     <div className="flex items-center justify-between gap-3 py-3">
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <span className="truncate text-sm text-ink">{item.name}</span>
-          {!item.isAvailable && <Badge variant="neutral">Hết món</Badge>}
+      <div className="flex min-w-0 flex-1 items-center gap-3">
+        {item.imageUrl && (
+          <img
+            src={item.imageUrl}
+            alt={item.name}
+            loading="lazy"
+            className="size-12 shrink-0 rounded-ticket object-cover"
+          />
+        )}
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="truncate text-sm text-ink">{item.name}</span>
+            {!item.isAvailable && <Badge variant="neutral">Hết món</Badge>}
+          </div>
+          <span className="font-mono text-xs text-ink">{formatMoney(item.basePrice)}</span>
         </div>
-        <span className="font-mono text-xs text-muted">{formatMoney(item.basePrice)}</span>
       </div>
 
       <button

@@ -10,6 +10,10 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import {
+  REALTIME_CORS,
+  REALTIME_NAMESPACE,
+} from '../../shared/constants/websocket.constant';
 import { JwtPayload } from '../../shared/types/jwt-payload.type';
 import { OrderResponseDto } from './dto/order-response.dto';
 import { OrdersRepository } from './orders.repository';
@@ -30,7 +34,7 @@ type AuthenticatedSocket = Omit<Socket, 'data'> & {
  * Socket.IO Rules). Emits are always called from OrdersService *after* its
  * write transaction commits, never from inside one.
  */
-@WebSocketGateway({ namespace: 'realtime' })
+@WebSocketGateway({ namespace: REALTIME_NAMESPACE, cors: REALTIME_CORS })
 export class OrdersGateway implements OnGatewayConnection {
   @WebSocketServer()
   server: Server;

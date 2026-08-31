@@ -51,9 +51,10 @@ export class AuthController {
     const token = (req.cookies as Record<string, string> | undefined)?.[
       REFRESH_COOKIE
     ];
-    const { accessToken, refreshToken } = await this.authService.refresh(token);
+    const { accessToken, refreshToken, user } =
+      await this.authService.refresh(token);
     this.setRefreshCookie(res, refreshToken);
-    return { accessToken };
+    return { accessToken, user };
   }
 
   @Post('logout')

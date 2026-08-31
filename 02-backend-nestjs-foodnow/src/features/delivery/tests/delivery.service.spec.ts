@@ -20,6 +20,7 @@ const RESTAURANT: RestaurantResponseDto = {
   ownerId: 'owner-1',
   name: 'Pho 24',
   description: null,
+  imageUrl: null,
   lat: 21.0245,
   lng: 105.8412,
   openingHours: {} as never,
@@ -85,7 +86,7 @@ function baseDelivery() {
     pickupTime: null as Date | null,
     deliveryTime: null as Date | null,
     estimatedDistanceKm: '3.20' as never,
-    status: DeliveryStatus.ASSIGNED,
+    status: DeliveryStatus.ASSIGNED as DeliveryStatus,
     createdAt: new Date('2026-01-01'),
     updatedAt: new Date('2026-01-01'),
   };

@@ -4,9 +4,10 @@ export { OrderTrackingPage } from './pages/OrderTrackingPage';
 
 export { DriverOfferCard } from './components/DriverOfferCard';
 export { DeliveryTrackingMap } from './components/DeliveryTrackingMap';
+export { ActiveDeliveryCard } from './components/ActiveDeliveryCard';
 
-export { useSetDriverAvailability } from './hooks/useDriverAvailability';
-export { useAvailableDeliveries } from './hooks/useAvailableDeliveries';
+export { useDriverAvailability, useSetDriverAvailability } from './hooks/useDriverAvailability';
+export { useAvailableDeliveries, useActiveDelivery } from './hooks/useAvailableDeliveries';
 export { useAcceptDelivery, usePickupDelivery, useCompleteDelivery } from './hooks/useDeliveryActions';
 export { useLocationPush } from './hooks/useLocationPush';
 export { useDriverOfferSocket } from './hooks/useDriverOfferSocket';

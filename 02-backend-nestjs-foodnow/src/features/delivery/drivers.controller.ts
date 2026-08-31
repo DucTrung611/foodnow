@@ -1,4 +1,4 @@
-import { Body, Controller, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Post, UseGuards } from '@nestjs/common';
 import { CurrentUser } from '../../shared/decorators/current-user.decorator';
 import { Roles } from '../../shared/decorators/roles.decorator';
 import { JwtAuthGuard } from '../../shared/guards/jwt-auth.guard';
@@ -14,6 +14,11 @@ import { SetAvailabilityDto } from './dto/set-availability.dto';
 @Roles(Role.DRIVER)
 export class DriversController {
   constructor(private readonly deliveryService: DeliveryService) {}
+
+  @Get('availability')
+  getAvailability(@CurrentUser() user: JwtPayload) {
+    return this.deliveryService.getAvailability(user.sub);
+  }
 
   @Patch('availability')
   setAvailability(

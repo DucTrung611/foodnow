@@ -32,6 +32,15 @@ export class OrdersController {
     return this.ordersService.createOrder(user.sub, dto);
   }
 
+  /** Same shape as `POST /orders`, minus the write — lets checkout preview
+   * delivery fee + total before the customer commits. */
+  @Post('quote')
+  @UseGuards(RolesGuard)
+  @Roles(Role.CUSTOMER)
+  quoteOrder(@CurrentUser() user: JwtPayload, @Body() dto: CreateOrderDto) {
+    return this.ordersService.quoteOrder(user.sub, dto);
+  }
+
   @Get()
   listOrders(
     @CurrentUser() user: JwtPayload,

@@ -1,12 +1,16 @@
 import { apiClient, unwrap, unwrapPaginated } from '@/shared/services/client';
 import type { User } from '@/shared/types';
 import type { Order } from '@/features/orders';
-import type { AdminOrderListParams, AdminUserListParams, UpdateUserStatusPayload } from '../types/admin.types';
+import type { Restaurant } from '@/features/restaurants';
+import type { AdminOrderListParams, AdminRestaurantListParams, AdminUserListParams, UpdateUserStatusPayload } from '../types/admin.types';
 
 export const adminService = {
   listOrders: (params: AdminOrderListParams) => unwrapPaginated<Order>(apiClient.get('/admin/orders', { params })),
 
   listUsers: (params: AdminUserListParams) => unwrapPaginated<User>(apiClient.get('/admin/users', { params })),
+
+  // Unlike the public restaurant search, this doesn't require lat/lng — see API_SPEC.md.
+  listRestaurants: (params: AdminRestaurantListParams) => unwrapPaginated<Restaurant>(apiClient.get('/admin/restaurants', { params })),
 
   updateUserStatus: (id: string, payload: UpdateUserStatusPayload) =>
     unwrap<User>(apiClient.patch(`/admin/users/${id}/status`, payload)),

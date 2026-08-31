@@ -13,5 +13,8 @@ export const paymentsService = {
 
   getById: (id: string) => unwrap<Payment>(apiClient.get(`/payments/${id}`)),
 
+  // `null` means the order has no charge attempt yet — not an error.
+  getByOrderId: (orderId: string) => unwrap<Payment | null>(apiClient.get(`/orders/${orderId}/payment`)),
+
   refund: (id: string) => unwrap<Payment>(apiClient.post(`/payments/${id}/refund`)),
 };

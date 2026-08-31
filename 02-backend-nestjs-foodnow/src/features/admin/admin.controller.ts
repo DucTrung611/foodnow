@@ -13,6 +13,7 @@ import { RolesGuard } from '../../shared/guards/roles.guard';
 import { Role } from '../../shared/types/role.enum';
 import { AdminService } from './admin.service';
 import { AdminOrderListQueryDto } from './dto/admin-order-list-query.dto';
+import { AdminRestaurantListQueryDto } from './dto/admin-restaurant-list-query.dto';
 import { AdminUserListQueryDto } from './dto/admin-user-list-query.dto';
 import { UpdateUserStatusDto } from './dto/update-user-status.dto';
 
@@ -30,6 +31,11 @@ export class AdminController {
   @Get('users')
   listUsers(@Query() query: AdminUserListQueryDto) {
     return this.adminService.listUsers(query);
+  }
+
+  @Get('restaurants')
+  listRestaurants(@Query() query: AdminRestaurantListQueryDto) {
+    return this.adminService.listRestaurants(query);
   }
 
   @Patch('users/:id/status')

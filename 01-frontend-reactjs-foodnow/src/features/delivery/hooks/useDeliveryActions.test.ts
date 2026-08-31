@@ -86,7 +86,7 @@ describe('useCompleteDelivery', () => {
   it('confirms delivery completion', async () => {
     server.use(
       http.post(`${BASE_URL}/deliveries/${DELIVERY_ID}/complete`, () =>
-        HttpResponse.json({ success: true, data: makeDelivery('COMPLETED') }),
+        HttpResponse.json({ success: true, data: makeDelivery('DELIVERED') }),
       ),
     );
 
@@ -94,6 +94,6 @@ describe('useCompleteDelivery', () => {
     result.current.mutate(DELIVERY_ID);
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data?.status).toBe('COMPLETED');
+    expect(result.current.data?.status).toBe('DELIVERED');
   });
 });

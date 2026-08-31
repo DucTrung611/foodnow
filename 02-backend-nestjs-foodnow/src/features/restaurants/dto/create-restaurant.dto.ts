@@ -15,6 +15,10 @@ export class CreateRestaurantDto {
   @IsString()
   description?: string;
 
+  @IsOptional()
+  @IsString()
+  imageUrl?: string;
+
   @IsLatitude()
   lat: number;
 

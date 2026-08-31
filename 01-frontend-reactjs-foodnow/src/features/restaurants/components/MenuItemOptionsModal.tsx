@@ -69,7 +69,7 @@ export function MenuItemOptionsModal({ item, open, isSubmitting, onClose, onConf
                       {option.name}
                     </span>
                     {Number(option.extraPrice) > 0 && (
-                      <span className="font-mono text-xs text-muted">+{formatMoney(option.extraPrice)}</span>
+                      <span className="font-mono text-xs text-ink">+{formatMoney(option.extraPrice)}</span>
                     )}
                   </label>
                 );

@@ -121,7 +121,7 @@ Applied globally by `AllExceptionsFilter`. `details` is `null` unless validation
 |---|---|---|---|
 | POST | `/auth/register` | Register (role: CUSTOMER/VENDOR/DRIVER) | Public |
 | POST | `/auth/login` | Login, returns token pair | Public |
-| POST | `/auth/refresh` | Rotate token pair | Refresh token |
+| POST | `/auth/refresh` | Rotate token pair, returns `{ accessToken, user }` | Refresh token |
 | POST | `/auth/logout` | Revoke refresh token | Any |
 | GET | `/users/me` | Current profile | Any |
 | PATCH | `/users/me` | Update profile | Any |
@@ -134,6 +134,7 @@ Applied globally by `AllExceptionsFilter`. `details` is `null` unless validation
 | Method | Path | Description | Auth |
 |---|---|---|---|
 | GET | `/restaurants` | Search by geo radius, category, rating | Public |
+| GET | `/restaurants/me` | Caller's own restaurant | VENDOR |
 | GET | `/restaurants/:id` | Detail + opening hours | Public |
 | GET | `/restaurants/:id/menu` | Categories + items + option groups | Public |
 | POST | `/restaurants` | Register restaurant (status: PENDING) | VENDOR |
@@ -152,6 +153,7 @@ Applied globally by `AllExceptionsFilter`. `details` is `null` unless validation
 | DELETE | `/cart/items/:id` | Remove item | CUSTOMER |
 | DELETE | `/cart` | Clear cart | CUSTOMER |
 | POST | `/orders` | Place order (price snapshot) | CUSTOMER |
+| POST | `/orders/quote` | Preview subtotal/deliveryFee/discount/total, no write | CUSTOMER |
 | GET | `/orders` | List own orders (role-scoped) | Any |
 | GET | `/orders/:id` | Order detail + items + history | Owner/Vendor/Driver/Admin |
 | PATCH | `/orders/:id/status` | Advance status (optimistic lock) | VENDOR / DRIVER / ADMIN |
@@ -162,6 +164,7 @@ Applied globally by `AllExceptionsFilter`. `details` is `null` unless validation
 |---|---|---|---|
 | PATCH | `/drivers/me/availability` | Toggle online/offline | DRIVER |
 | GET | `/deliveries/available` | Nearby unassigned orders | DRIVER |
+| GET | `/deliveries/active` | Caller's current in-progress delivery, `null` if none | DRIVER |
 | POST | `/deliveries/:id/accept` | Accept assignment | DRIVER |
 | POST | `/deliveries/:id/pickup` | Confirm pickup | DRIVER |
 | POST | `/deliveries/:id/complete` | Confirm delivered | DRIVER |
@@ -172,6 +175,7 @@ Applied globally by `AllExceptionsFilter`. `details` is `null` unless validation
 | Method | Path | Description | Auth |
 |---|---|---|---|
 | POST | `/orders/:id/pay` | Charge (requires `Idempotency-Key`) | CUSTOMER |
+| GET | `/orders/:id/payment` | Payment for this order, `null` if unpaid | CUSTOMER (owner) |
 | GET | `/payments/:id` | Payment status | CUSTOMER / ADMIN |
 | POST | `/payments/:id/refund` | Refund order | ADMIN |
 | POST | `/promotions/validate` | Preview discount for a cart | CUSTOMER |
@@ -181,6 +185,7 @@ Applied globally by `AllExceptionsFilter`. `details` is `null` unless validation
 | GET | `/drivers/me/earnings` | Earnings summary | DRIVER |
 | GET | `/admin/orders` | All orders, filterable by `status`/`customerId`/`restaurantId`/`driverId` | ADMIN |
 | GET | `/admin/users` | All users, filterable by `status`/`role`/`search` (partial match on `fullName`) | ADMIN |
+| GET | `/admin/restaurants` | All restaurants, filterable by `search` (partial match on `name`), no `lat`/`lng` required | ADMIN |
 | PATCH | `/admin/users/:id/status` | Approve / suspend account | ADMIN |
 
 ## 7. Endpoint Details

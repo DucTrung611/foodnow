@@ -11,11 +11,13 @@ Global account approval/suspension, account listing, and an unrestricted, filter
   - `updateUserStatus(userId, dto)` → `UsersService.updateStatus`
   - `listUsers(query)` → `UsersService.listUsers`
   - `listOrders(query)` → `OrdersService.listForAdmin`
+  - `listRestaurants(query)` → `RestaurantsService.listForAdmin`
 
 ## Routes
 - `PATCH /admin/users/:id/status` — approve (`ACTIVE`) or suspend (`SUSPENDED`) any account, including the `VENDOR`/`DRIVER` accounts that `users` registers as `PENDING`. Any `UserStatus` value is accepted; no transition table — an admin can set any status at any time.
 - `GET /admin/users` — filterable by `status`/`role`/`search` (partial, case-insensitive match on `fullName`, same convention as `restaurants`' `search`). Not in `API_SPEC.md` — added here to back the frontend's `AdminUsersPage`; should be added to `API_SPEC.md`'s endpoint table alongside the other Admin routes.
 - `GET /admin/orders` — like `GET /orders` for an `ADMIN` caller (no customer/vendor/driver scoping), but additionally filterable by `customerId`/`restaurantId`/`driverId`, not just `status`. Separate from `OrdersService.listOrders`'s role-scoped path (`orders.service.ts`'s `listForAdmin` builds its own unscoped `where` — it does not reuse `scopeWhereForRole`).
+- `GET /admin/restaurants` — filterable by `search` (partial match on `name`), paginated, **no `lat`/`lng` required** unlike the public `GET /restaurants` search. Added to power a restaurant filter dropdown on the admin order list (`RestaurantsRepository.findAllForAdmin`) — an admin picking "which restaurant's orders" has no reason to supply a geo center.
 
 ## Cross-feature integration
 - Both guards (`JwtAuthGuard`, `RolesGuard` + `@Roles(Role.ADMIN)`) sit on the controller class, not per-route — every route here is admin-only by construction.

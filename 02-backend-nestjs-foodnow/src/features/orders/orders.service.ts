@@ -32,6 +32,7 @@ import { CancelOrderDto } from './dto/cancel-order.dto';
 import { CartItemResponseDto, CartResponseDto } from './dto/cart-response.dto';
 import { CreateOrderDto, CreateOrderItemDto } from './dto/create-order.dto';
 import { OrderListQueryDto } from './dto/order-list-query.dto';
+import { OrderQuoteResponseDto } from './dto/order-quote-response.dto';
 import {
   OrderItemResponseDto,
   OrderResponseDto,
@@ -295,6 +296,68 @@ export class OrdersService {
     customerId: string,
     dto: CreateOrderDto,
   ): Promise<OrderResponseDto> {
+    const { resolvedItems, subtotal, deliveryFee, discountAmount, totalAmount, appliedPromotionId } =
+      await this.priceOrder(customerId, dto);
+
+    const order = await this.ordersRepository.createOrder({
+      customerId,
+      restaurantId: dto.restaurantId,
+      deliveryAddressId: dto.deliveryAddressId,
+      note: dto.note,
+      subtotal,
+      deliveryFee,
+      discountAmount,
+      totalAmount,
+      items: resolvedItems,
+    });
+
+    if (appliedPromotionId) {
+      // Fire-and-forget: usage accounting must never block order creation.
+      void this.promotionsService.recordUsage(
+        appliedPromotionId,
+        customerId,
+        order.id,
+        discountAmount,
+      );
+    }
+
+    const response = toOrderResponseDto(order);
+    this.ordersGateway.emitOrderCreated(dto.restaurantId, response);
+    return response;
+  }
+
+  /**
+   * Same pricing rules as `createOrder`, minus the write — lets the checkout
+   * page show delivery fee + grand total before the customer commits
+   * (UX-AUDIT-REPORT.md §1.3: previously only the subtotal was shown before
+   * placing the order). `promotionsService.validate` has no side effects;
+   * usage is only recorded on an actual order (see `createOrder`).
+   */
+  async quoteOrder(
+    customerId: string,
+    dto: CreateOrderDto,
+  ): Promise<OrderQuoteResponseDto> {
+    const { subtotal, deliveryFee, discountAmount, totalAmount } =
+      await this.priceOrder(customerId, dto);
+    return {
+      subtotal: subtotal.toFixed(2),
+      deliveryFee: deliveryFee.toFixed(2),
+      discountAmount: discountAmount.toFixed(2),
+      totalAmount: totalAmount.toFixed(2),
+    };
+  }
+
+  private async priceOrder(
+    customerId: string,
+    dto: CreateOrderDto,
+  ): Promise<{
+    resolvedItems: ResolvedOrderItem[];
+    subtotal: number;
+    deliveryFee: number;
+    discountAmount: number;
+    totalAmount: number;
+    appliedPromotionId?: string;
+  }> {
     const restaurant = await this.restaurantsService.getById(dto.restaurantId);
     if (!restaurant.isOpen) {
       throw new UnprocessableEntityException({
@@ -346,31 +409,14 @@ export class OrdersService {
     }
     const totalAmount = subtotal + deliveryFee - discountAmount;
 
-    const order = await this.ordersRepository.createOrder({
-      customerId,
-      restaurantId: dto.restaurantId,
-      deliveryAddressId: dto.deliveryAddressId,
-      note: dto.note,
+    return {
+      resolvedItems,
       subtotal,
       deliveryFee,
       discountAmount,
       totalAmount,
-      items: resolvedItems,
-    });
-
-    if (appliedPromotionId) {
-      // Fire-and-forget: usage accounting must never block order creation.
-      void this.promotionsService.recordUsage(
-        appliedPromotionId,
-        customerId,
-        order.id,
-        discountAmount,
-      );
-    }
-
-    const response = toOrderResponseDto(order);
-    this.ordersGateway.emitOrderCreated(dto.restaurantId, response);
-    return response;
+      appliedPromotionId,
+    };
   }
 
   private resolveOrderItem(

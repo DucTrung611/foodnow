@@ -101,14 +101,15 @@ async function createRestaurant(dto: {
   ownerId: string;
   name: string;
   description: string;
+  imageUrl?: string;
   lat: number;
   lng: number;
   openingHours: OpeningHours;
 }): Promise<string> {
   const rows = await prisma.$queryRaw<{ id: string }[]>`
-    INSERT INTO restaurants (id, owner_id, name, description, location, opening_hours, status, avg_rating, version, created_at, updated_at)
+    INSERT INTO restaurants (id, owner_id, name, description, image_url, location, opening_hours, status, avg_rating, version, created_at, updated_at)
     VALUES (
-      gen_random_uuid(), ${dto.ownerId}, ${dto.name}, ${dto.description},
+      gen_random_uuid(), ${dto.ownerId}, ${dto.name}, ${dto.description}, ${dto.imageUrl ?? null},
       ST_SetSRID(ST_MakePoint(${dto.lng}, ${dto.lat}), 4326)::geography,
       ${JSON.stringify(dto.openingHours)}::jsonb,
       ${RestaurantStatus.ACTIVE}, 0, 0, now(), now()
@@ -425,6 +426,7 @@ async function main() {
     ownerId: vendors[0].id,
     name: 'Phở Bò Gia Truyền Hà Thành',
     description: 'Phở bò truyền thống ninh xương 8 tiếng, nước dùng trong và đậm vị.',
+    imageUrl: 'https://picsum.photos/seed/foodnow-pho-bo/640/480',
     ...rPho,
     openingHours: DAILY_7_22,
   });
@@ -462,6 +464,7 @@ async function main() {
     ownerId: vendors[1].id,
     name: 'Bún Chả Cô Hiền',
     description: 'Bún chả than hoa thơm lừng, nước chấm pha chuẩn vị Hà Nội.',
+    imageUrl: 'https://picsum.photos/seed/foodnow-bun-cha/640/480',
     ...rBunCha,
     openingHours: DAILY_7_22,
   });
@@ -499,6 +502,7 @@ async function main() {
     ownerId: vendors[2].id,
     name: 'Cơm Tấm Sườn Bì Út Sáu',
     description: 'Cơm tấm kiểu Sài Gòn, sườn nướng than hoa, bì giòn, chả trứng hấp.',
+    imageUrl: 'https://picsum.photos/seed/foodnow-com-tam/640/480',
     ...rComTam,
     openingHours: DAILY_7_22,
   });
@@ -534,6 +538,7 @@ async function main() {
   const restaurant4Id = await createRestaurant({
     ownerId: vendors[3].id,
     name: 'Trà Sữa & Café Mộc Trà',
+    imageUrl: 'https://picsum.photos/seed/foodnow-tra-sua/640/480',
     description: 'Trà sữa tự pha, trân châu nấu mỗi ngày, cà phê rang mộc.',
     ...rTraSua,
     openingHours: DAILY_7_22,
@@ -587,6 +592,7 @@ async function main() {
     ownerId: vendors[4].id,
     name: 'Pizza & Pasta Bella Vita',
     description: 'Pizza đế mỏng nướng lò củi, mì Ý sốt nhà làm.',
+    imageUrl: 'https://picsum.photos/seed/foodnow-pizza/640/480',
     ...rPizza,
     openingHours: CLOSED_TUESDAY,
   });
@@ -621,6 +627,7 @@ async function main() {
     ownerId: vendors[5].id,
     name: 'Gà Rán Phố Cổ',
     description: 'Gà rán giòn tan, ướp gia vị kiểu phố cổ, phục vụ nhanh.',
+    imageUrl: 'https://picsum.photos/seed/foodnow-ga-ran/640/480',
     ...rGaRan,
     openingHours: DAILY_7_22,
   });

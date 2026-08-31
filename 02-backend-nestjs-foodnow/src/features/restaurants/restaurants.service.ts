@@ -58,6 +58,7 @@ export function toRestaurantResponseDto(
     ownerId: row.owner_id,
     name: row.name,
     description: row.description,
+    imageUrl: row.image_url,
     lat: row.lat,
     lng: row.lng,
     openingHours: row.opening_hours,
@@ -108,6 +109,7 @@ export function toMenuItemResponseDto(
     categoryId: item.categoryId,
     name: item.name,
     basePrice: formatDecimal(item.basePrice),
+    imageUrl: item.imageUrl,
     isAvailable: item.isAvailable,
     optionGroups: item.optionGroups.map(toMenuItemOptionGroupDto),
     version: item.version,
@@ -162,6 +164,19 @@ export class RestaurantsService {
     return toRestaurantResponseDto(row);
   }
 
+  /** VENDOR's own restaurant — resolves `owner_id` server-side so the
+   * frontend never has to guess a restaurant id from the JWT user id. */
+  async getMine(ownerId: string): Promise<RestaurantResponseDto> {
+    const row = await this.restaurantsRepository.findByOwnerId(ownerId);
+    if (!row) {
+      throw new NotFoundException({
+        code: 'RESTAURANT_2001',
+        message: 'Restaurant not found',
+      });
+    }
+    return toRestaurantResponseDto(row);
+  }
+
   async updateRestaurant(
     userId: string,
     id: string,
@@ -201,6 +216,30 @@ export class RestaurantsService {
       search: query.search,
       status: query.status ?? RestaurantStatus.ACTIVE,
       sort: query.sort,
+      skip,
+      take,
+    });
+
+    return buildPaginatedResult(
+      rows.map(toRestaurantResponseDto),
+      total,
+      page,
+      limit,
+    );
+  }
+
+  /** Admin-only, unscoped by geography — see `RestaurantsRepository.findAllForAdmin`. */
+  async listForAdmin(query: {
+    page?: number;
+    limit?: number;
+    search?: string;
+  }): Promise<PaginatedResult<RestaurantResponseDto>> {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 20;
+    const { skip, take } = paginate(page, limit);
+
+    const { rows, total } = await this.restaurantsRepository.findAllForAdmin({
+      search: query.search,
       skip,
       take,
     });

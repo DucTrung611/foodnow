@@ -4,6 +4,7 @@ export { ProfilePage } from './pages/ProfilePage';
 
 export { LoginForm } from './components/LoginForm';
 export { RegisterForm } from './components/RegisterForm';
+export { AccountMenu } from './components/AccountMenu';
 
 export { useLogin, useRegister, useLogout } from './hooks/useAuth';
 export { useBootstrapAuth } from './hooks/useBootstrapAuth';

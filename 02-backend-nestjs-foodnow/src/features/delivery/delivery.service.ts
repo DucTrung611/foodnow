@@ -67,6 +67,16 @@ export class DeliveryService {
     return { isAvailable };
   }
 
+  /** Lets the frontend restore the online/offline toggle on load instead of
+   * always defaulting to offline (UX-AUDIT-REPORT.md §3.1). */
+  async getAvailability(driverId: string): Promise<{ isAvailable: boolean }> {
+    const isMember = await this.redisService.sismember(
+      ONLINE_DRIVERS_KEY,
+      driverId,
+    );
+    return { isAvailable: isMember === 1 };
+  }
+
   listOnlineDriverIds(): Promise<string[]> {
     return this.redisService.smembers(ONLINE_DRIVERS_KEY);
   }
@@ -115,6 +125,16 @@ export class DeliveryService {
     }
 
     return results.sort((a, b) => a.distanceMeters - b.distanceMeters);
+  }
+
+  /** `null` when the driver has no in-progress delivery right now. */
+  async getActiveDelivery(
+    driverId: string,
+  ): Promise<DeliveryResponseDto | null> {
+    const delivery = await this.deliveryRepository.findActiveByDriverId(
+      driverId,
+    );
+    return delivery ? toDeliveryResponseDto(delivery) : null;
   }
 
   async acceptDelivery(

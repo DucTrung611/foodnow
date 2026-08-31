@@ -185,6 +185,17 @@ export class PaymentsService {
     return toPaymentResponseDto(payment);
   }
 
+  /** `null` means no charge attempt has been made yet — not an error. */
+  async getPaymentByOrderId(
+    user: JwtPayload,
+    orderId: string,
+  ): Promise<PaymentResponseDto | null> {
+    // Ownership/existence check — same as payOrder above.
+    await this.ordersService.getOrderById(user, orderId);
+    const payment = await this.paymentsRepository.findByOrderId(orderId);
+    return payment ? toPaymentResponseDto(payment) : null;
+  }
+
   async refundPayment(
     id: string,
     dto: RefundPaymentDto,

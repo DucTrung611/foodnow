@@ -7,3 +7,11 @@ export const usePayment = (id: string) =>
     queryFn: () => paymentsService.getById(id),
     enabled: Boolean(id),
   });
+
+/** `data` is `null` before the order's first charge attempt — not loading, not an error. */
+export const usePaymentByOrder = (orderId: string) =>
+  useQuery({
+    queryKey: ['payments', 'byOrder', orderId],
+    queryFn: () => paymentsService.getByOrderId(orderId),
+    enabled: Boolean(orderId),
+  });

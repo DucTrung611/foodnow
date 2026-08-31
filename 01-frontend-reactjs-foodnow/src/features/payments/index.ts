@@ -2,7 +2,7 @@ export { PaymentMethodSelector } from './components/PaymentMethodSelector';
 export { PayOrderPanel } from './components/PayOrderPanel';
 
 export { usePayOrder } from './hooks/usePayOrder';
-export { usePayment } from './hooks/usePayment';
+export { usePayment, usePaymentByOrder } from './hooks/usePayment';
 export { usePaymentSocket } from './hooks/usePaymentSocket';
 
 export { paymentsService } from './services/payments.service';

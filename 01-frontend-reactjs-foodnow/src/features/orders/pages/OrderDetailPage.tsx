@@ -1,8 +1,9 @@
 import { Link, useParams } from 'react-router-dom';
-import { Skeleton } from '@/shared/components/ui';
+import { Badge, Skeleton } from '@/shared/components/ui';
 import { formatMoney } from '@/shared/utils/money';
+import { useAuthStore } from '@/shared/stores/auth.store';
 import { ROUTES } from '@/app/routes/routes.config';
-import { PayOrderPanel, usePaymentSocket } from '@/features/payments';
+import { PayOrderPanel, usePaymentByOrder, usePaymentSocket } from '@/features/payments';
 import { OrderStatusTimeline } from '../components/OrderStatusTimeline';
 import { useOrder } from '../hooks/useOrder';
 import { useOrderStatusSocket } from '../hooks/useOrderStatusSocket';
@@ -10,6 +11,8 @@ import { useOrderStatusSocket } from '../hooks/useOrderStatusSocket';
 export function OrderDetailPage() {
   const { id = '' } = useParams<{ id: string }>();
   const { data: order, isLoading } = useOrder(id);
+  const isCustomer = useAuthStore((s) => s.user?.role === 'CUSTOMER');
+  const { data: payment } = usePaymentByOrder(isCustomer ? id : '');
   useOrderStatusSocket(id);
   usePaymentSocket(id);
 
@@ -45,7 +48,7 @@ export function OrderDetailPage() {
             <span className="text-sm text-ink">
               {item.quantity}× {item.itemNameSnapshot}
             </span>
-            <span className="font-mono text-sm text-muted">{formatMoney(item.subtotal)}</span>
+            <span className="font-mono text-sm text-ink">{formatMoney(item.subtotal)}</span>
           </div>
         ))}
         <div className="flex items-center justify-between pt-3">
@@ -54,9 +57,15 @@ export function OrderDetailPage() {
         </div>
       </section>
 
-      {order.status === 'PENDING' && (
+      {isCustomer && order.status === 'PENDING' && payment?.status !== 'PAID' && (
         <div className="mt-6">
           <PayOrderPanel orderId={order.id} />
+        </div>
+      )}
+      {isCustomer && payment?.status === 'PAID' && (
+        <div className="mt-6 flex items-center justify-between rounded-ticket border border-success-bg bg-success-bg px-4 py-3">
+          <span className="text-sm font-medium text-success">Đã thanh toán</span>
+          <Badge variant="success">{payment.method}</Badge>
         </div>
       )}
     </div>

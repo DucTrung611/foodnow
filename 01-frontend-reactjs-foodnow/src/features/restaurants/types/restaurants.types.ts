@@ -10,6 +10,7 @@ export type Restaurant = {
   ownerId: string;
   name: string;
   description: string | null;
+  imageUrl: string | null;
   lat: number;
   lng: number;
   openingHours: OpeningHours;
@@ -52,6 +53,7 @@ export type MenuItem = {
   categoryId: string;
   name: string;
   basePrice: string;
+  imageUrl: string | null;
   isAvailable: boolean;
   optionGroups: MenuItemOptionGroup[];
   version: number;
@@ -72,6 +74,7 @@ export type RestaurantMenu = {
 export type CreateRestaurantPayload = {
   name: string;
   description?: string;
+  imageUrl?: string;
   lat: number;
   lng: number;
   openingHours: OpeningHours;
@@ -81,5 +84,6 @@ export type CreateMenuItemPayload = {
   categoryId: string;
   name: string;
   basePrice: string;
+  imageUrl?: string;
   isAvailable?: boolean;
 };

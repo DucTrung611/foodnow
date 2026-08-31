@@ -17,6 +17,10 @@ export class CreateMenuItemDto {
   basePrice: string;
 
   @IsOptional()
+  @IsString()
+  imageUrl?: string;
+
+  @IsOptional()
   @IsBoolean()
   isAvailable?: boolean;
 }

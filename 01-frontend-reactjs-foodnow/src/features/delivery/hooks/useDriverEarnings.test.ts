@@ -14,9 +14,9 @@ describe('useDriverEarnings', () => {
         HttpResponse.json({
           success: true,
           data: {
-            totalEarned: '1250000.00',
-            pendingPayout: '150000.00',
-            entries: [
+            totalPaidAmount: '1250000.00',
+            totalPendingAmount: '150000.00',
+            earnings: [
               {
                 id: 'earning-1',
                 deliveryId: 'delivery-1',
@@ -34,7 +34,7 @@ describe('useDriverEarnings', () => {
     const { result } = renderHookWithProviders(() => useDriverEarnings());
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data?.totalEarned).toBe('1250000.00');
-    expect(result.current.data?.entries).toHaveLength(1);
+    expect(result.current.data?.totalPaidAmount).toBe('1250000.00');
+    expect(result.current.data?.earnings).toHaveLength(1);
   });
 });

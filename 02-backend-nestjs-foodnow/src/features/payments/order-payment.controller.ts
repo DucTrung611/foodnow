@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   Headers,
   Param,
   Post,
@@ -34,5 +35,19 @@ export class OrderPaymentController {
     @Body() dto: PayOrderDto,
   ) {
     return this.paymentsService.payOrder(user, orderId, idempotencyKey, dto);
+  }
+
+  /**
+   * Lets the order-detail page know whether an order has already been paid
+   * (returns `null` before the first charge attempt) — without this, the
+   * frontend had no durable way to tell paid from unpaid across a reload and
+   * kept showing the payment form after a successful charge.
+   */
+  @Get(':id/payment')
+  getOrderPayment(
+    @CurrentUser() user: JwtPayload,
+    @Param('id') orderId: string,
+  ) {
+    return this.paymentsService.getPaymentByOrderId(user, orderId);
   }
 }

@@ -13,7 +13,7 @@ Driver availability, nearby-order matching (pull + event-driven push), accept/pi
 
 ## Routes
 - `PATCH /drivers/me/availability`, `POST /drivers/me/locations` — `drivers.controller.ts` (`@Controller('drivers/me')`).
-- `GET /deliveries/available`, `POST /deliveries/:id/accept|pickup|complete` — `deliveries.controller.ts`. **`:id` is the order id**, not a delivery id — confirmed from the frontend's `useDeliveryActions.ts` (`acceptDelivery.mutate(offer.orderId)`); no delivery row exists yet at accept time anyway.
+- `GET /deliveries/available`, `GET /deliveries/active`, `POST /deliveries/:id/accept|pickup|complete` — `deliveries.controller.ts`. **`:id` is the order id**, not a delivery id — confirmed from the frontend's `useDeliveryActions.ts` (`acceptDelivery.mutate(offer.orderId)`); no delivery row exists yet at accept time anyway. `GET /deliveries/active` (added for the driver "resume after accepting" UI gap in UX-AUDIT-REPORT.md §3.1) returns the caller's most recent `Delivery` row with status `ASSIGNED`/`PICKED_UP`, or `null`.
 - `GET /orders/:id/tracking` — `order-tracking.controller.ts`, despite living in `delivery` (reads `driver_locations`, delivery-owned data) rather than `orders.controller.ts`.
 - Driver online/offline is Redis presence (`drivers:online` set via `RedisService.sadd`/`srem`/`smembers`), not a DB column — ephemeral, no schema change needed.
 - "Nearby unassigned orders" = `orders` with `status=READY_FOR_PICKUP` and no `deliveries` row yet, distance = Haversine from the driver's last-pushed `driver_locations` point to the **restaurant** (not the delivery address — driver travels there to pick up first). No location on file yet → empty list. `estimatedEarning` reuses the order's own `deliveryFee`.
@@ -35,7 +35,6 @@ Driver availability, nearby-order matching (pull + event-driven push), accept/pi
 ## Deferred (not in this pass)
 - `POST /orders/:id/cancel` doesn't notify `delivery` — an in-progress `deliveries` row isn't marked `CANCELLED` when its order is cancelled. Would need `orders` to emit an `order.cancelled`-shaped event for `delivery` to listen to.
 - DRIVER ownership on `accept`/`pickup`/`complete` is enforced (`delivery.driverId === caller` after acceptance), but nothing stops two drivers racing to `accept` the same order simultaneously beyond the `uq_deliveries_order` unique constraint surfacing as an unhandled 500 in that exact race window — acceptable at this scale, not retried/locked explicitly.
-- Frontend fix needed: `delivery.types.ts`'s `DeliveryStatus` uses `'COMPLETED'`, but the real Prisma enum (and this implementation) uses `DELIVERED` — same class of gap as `OrderStatus` was for the `orders` pass, now confirmed against the actual backend enum.
 
 ## Events
 - Emits: `order.ready_for_pickup` (from `orders`, listened to here), `delivery.completed` (from here, listened to by `earnings`)

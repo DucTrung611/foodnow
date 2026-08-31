@@ -18,6 +18,13 @@
   the body — it's set as an httpOnly cookie, hence `apiClient` uses `withCredentials: true`.
 - `role` on register is restricted to `CUSTOMER | VENDOR | DRIVER` — `ADMIN` accounts aren't
   self-registerable.
+- `POST /auth/refresh` also returns `{ accessToken, user }`, not just the token. The refresh_token
+  cookie is browser-wide, not per-tab, so a different tab logging in as someone else silently
+  rewrites it too — `shared/services/client.ts`'s interceptor compares the returned `user.id`
+  against the store's current user and force-logs-out with a toast on mismatch instead of quietly
+  continuing under a token that no longer matches the identity the UI is showing
+  (UX-AUDIT-REPORT.md §0 "shared refresh token"). `useBootstrapAuth` also no longer makes a
+  separate `GET /users/me` call on mount — `refresh()` already returns the user.
 - `phone` must match `^(0|\+84)[0-9]{9,10}$`; `password` minimum 8 characters — both enforced
   client-side in `RegisterForm`'s zod schema to mirror the backend DTO.
 

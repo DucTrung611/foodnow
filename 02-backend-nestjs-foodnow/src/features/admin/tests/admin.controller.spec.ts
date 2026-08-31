@@ -12,6 +12,7 @@ describe('AdminController', () => {
       updateUserStatus: jest.fn(),
       listOrders: jest.fn(),
       listUsers: jest.fn(),
+      listRestaurants: jest.fn(),
     } as unknown as jest.Mocked<AdminService>;
 
     controller = new AdminController(service);
@@ -34,5 +35,11 @@ describe('AdminController', () => {
     const query = { status: UserStatus.PENDING, role: undefined };
     await controller.listUsers(query);
     expect(service.listUsers).toHaveBeenCalledWith(query);
+  });
+
+  it('listRestaurants delegates the query to the service', async () => {
+    const query = { search: 'Phở' };
+    await controller.listRestaurants(query);
+    expect(service.listRestaurants).toHaveBeenCalledWith(query);
   });
 });

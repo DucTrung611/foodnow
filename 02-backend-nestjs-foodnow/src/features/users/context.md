@@ -14,7 +14,7 @@ Auth (register/login/refresh/logout), profile, and address management. Implement
 ## Routes
 - `POST /auth/register` — Public. Role must be `CUSTOMER`/`VENDOR`/`DRIVER` (not `ADMIN`). `CUSTOMER` accounts start `ACTIVE`; `VENDOR`/`DRIVER` start `PENDING` pending admin approval (`PATCH /admin/users/:id/status`, see `features/admin`).
 - `POST /auth/login` — Public. Returns `{ accessToken, user }` in the body; sets `refreshToken` as an httpOnly cookie (per API_SPEC's token-flow table — the flow diagram's shorthand `{accessToken, refreshToken, user}` is treated as informal, since the detailed table is explicit that refresh token storage is httpOnly-cookie-only).
-- `POST /auth/refresh` — reads the `refreshToken` cookie, verifies it, checks its `jti` is still valid in Redis, rotates (old `jti` deleted, new one stored), returns a new `accessToken` and sets a new cookie.
+- `POST /auth/refresh` — reads the `refreshToken` cookie, verifies it, checks its `jti` is still valid in Redis, rotates (old `jti` deleted, new one stored), returns `{ accessToken, user }` and sets a new cookie. `user` is looked up fresh (also re-checks `SUSPENDED`) rather than trusted from the JWT payload — the frontend uses it to detect a cross-tab identity swap on the shared cookie (see `01-frontend-reactjs-foodnow`'s `features/auth/context.md`).
 - `POST /auth/logout` — Any (authenticated). Revokes the refresh token's `jti` in Redis, clears the cookie.
 - `GET/PATCH /users/me` — Any (authenticated).
 - `GET/POST /users/me/addresses`, `PATCH/DELETE /users/me/addresses/:id` — `CUSTOMER` only, per API_SPEC's auth column.

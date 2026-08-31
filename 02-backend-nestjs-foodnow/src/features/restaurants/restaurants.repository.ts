@@ -9,6 +9,7 @@ export type RestaurantRow = {
   owner_id: string;
   name: string;
   description: string | null;
+  image_url: string | null;
   opening_hours: OpeningHours;
   status: RestaurantStatus;
   avg_rating: string;
@@ -21,7 +22,7 @@ export type RestaurantRow = {
 };
 
 const RESTAURANT_COLUMNS = Prisma.sql`
-  id, owner_id, name, description, opening_hours, status, avg_rating, version, created_at, updated_at,
+  id, owner_id, name, description, image_url, opening_hours, status, avg_rating, version, created_at, updated_at,
   ST_Y(location::geometry) AS lat, ST_X(location::geometry) AS lng
 `;
 
@@ -79,15 +80,16 @@ export class RestaurantsRepository {
     dto: {
       name: string;
       description?: string;
+      imageUrl?: string;
       lat: number;
       lng: number;
       openingHours: OpeningHours;
     },
   ): Promise<RestaurantRow> {
     const rows = await this.prisma.$queryRaw<RestaurantRow[]>`
-      INSERT INTO restaurants (id, owner_id, name, description, location, opening_hours, status, avg_rating, version, created_at, updated_at)
+      INSERT INTO restaurants (id, owner_id, name, description, image_url, location, opening_hours, status, avg_rating, version, created_at, updated_at)
       VALUES (
-        gen_random_uuid(), ${ownerId}, ${dto.name}, ${dto.description ?? null},
+        gen_random_uuid(), ${ownerId}, ${dto.name}, ${dto.description ?? null}, ${dto.imageUrl ?? null},
         ST_SetSRID(ST_MakePoint(${dto.lng}, ${dto.lat}), 4326)::geography,
         ${JSON.stringify(dto.openingHours)}::jsonb,
         'PENDING', 0, 0, now(), now()
@@ -106,11 +108,23 @@ export class RestaurantsRepository {
     return rows[0] ?? null;
   }
 
+  async findByOwnerId(ownerId: string): Promise<RestaurantRow | null> {
+    const rows = await this.prisma.$queryRaw<RestaurantRow[]>`
+      SELECT ${RESTAURANT_COLUMNS}
+      FROM restaurants
+      WHERE owner_id = ${ownerId}
+      ORDER BY created_at ASC
+      LIMIT 1
+    `;
+    return rows[0] ?? null;
+  }
+
   async updateRestaurant(
     id: string,
     dto: {
       name?: string;
       description?: string;
+      imageUrl?: string;
       lat?: number;
       lng?: number;
       openingHours?: OpeningHours;
@@ -120,6 +134,9 @@ export class RestaurantsRepository {
     if (dto.name !== undefined) sets.push(Prisma.sql`name = ${dto.name}`);
     if (dto.description !== undefined) {
       sets.push(Prisma.sql`description = ${dto.description}`);
+    }
+    if (dto.imageUrl !== undefined) {
+      sets.push(Prisma.sql`image_url = ${dto.imageUrl}`);
     }
     if (dto.openingHours !== undefined) {
       sets.push(
@@ -152,6 +169,33 @@ export class RestaurantsRepository {
       SET avg_rating = ${avgRating}, updated_at = now()
       WHERE id = ${id}
     `;
+  }
+
+  /** Unscoped by geography — `search()` requires lat/lng, which an admin
+   * picking a restaurant to filter orders by has no reason to supply. */
+  async findAllForAdmin(params: {
+    search?: string;
+    skip: number;
+    take: number;
+  }): Promise<{ rows: RestaurantRow[]; total: number }> {
+    const where = params.search
+      ? Prisma.sql`WHERE name ILIKE ${'%' + params.search + '%'}`
+      : Prisma.empty;
+
+    const rows = await this.prisma.$queryRaw<RestaurantRow[]>(Prisma.sql`
+      SELECT ${RESTAURANT_COLUMNS}
+      FROM restaurants
+      ${where}
+      ORDER BY name ASC
+      LIMIT ${params.take} OFFSET ${params.skip}
+    `);
+
+    const countRows = await this.prisma.$queryRaw<
+      { count: bigint }[]
+    >(Prisma.sql`
+      SELECT COUNT(*) AS count FROM restaurants ${where}
+    `);
+    return { rows, total: Number(countRows[0]?.count ?? 0) };
   }
 
   async search(
@@ -207,6 +251,7 @@ export class RestaurantsRepository {
       categoryId: string;
       name: string;
       basePrice: string;
+      imageUrl?: string;
       isAvailable?: boolean;
     },
   ): Promise<MenuItemWithOptions> {
@@ -216,6 +261,7 @@ export class RestaurantsRepository {
         categoryId: dto.categoryId,
         name: dto.name,
         basePrice: dto.basePrice,
+        imageUrl: dto.imageUrl,
         isAvailable: dto.isAvailable ?? true,
       },
       include: { optionGroups: { include: { options: true } } },
@@ -238,6 +284,7 @@ export class RestaurantsRepository {
       categoryId?: string;
       name?: string;
       basePrice?: string;
+      imageUrl?: string;
       isAvailable?: boolean;
     },
   ): Promise<MenuItemWithOptions> {

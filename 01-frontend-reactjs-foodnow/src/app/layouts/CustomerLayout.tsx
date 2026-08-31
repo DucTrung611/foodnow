@@ -1,5 +1,7 @@
 import { Link, Outlet } from 'react-router-dom';
 import { useAuthStore } from '@/shared/stores/auth.store';
+import { AccountMenu } from '@/features/auth';
+import { CartBadge } from '@/features/orders';
 import { ROUTES } from '@/app/routes/routes.config';
 
 export function CustomerLayout() {
@@ -7,15 +9,16 @@ export function CustomerLayout() {
 
   return (
     <div className="flex min-h-screen flex-col bg-paper">
-      <header className="flex items-center justify-between border-b border-muted-border px-6 py-4">
+      <header className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-muted-border px-4 py-4 sm:px-6">
         <Link to={ROUTES.home} className="font-display text-xl font-bold text-ink">
           Food<span className="text-primary">Now</span>
         </Link>
-        <nav className="flex items-center gap-6 font-sans text-sm text-ink">
+        <nav className="flex items-center gap-4 font-sans text-sm text-ink sm:gap-6">
           <Link to={ROUTES.restaurants}>Nhà hàng</Link>
-          <Link to={ROUTES.orders}>Đơn hàng</Link>
+          {user && <Link to={ROUTES.orders}>Đơn hàng</Link>}
+          {user && <CartBadge />}
           {user ? (
-            <span className="font-medium">{user.fullName}</span>
+            <AccountMenu />
           ) : (
             <Link to={ROUTES.login} className="font-medium text-primary">
               Đăng nhập

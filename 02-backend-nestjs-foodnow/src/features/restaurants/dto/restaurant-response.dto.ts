@@ -6,6 +6,7 @@ export class RestaurantResponseDto {
   ownerId: string;
   name: string;
   description: string | null;
+  imageUrl: string | null;
   lat: number;
   lng: number;
   openingHours: OpeningHours;
