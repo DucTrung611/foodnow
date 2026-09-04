@@ -1,4 +1,16 @@
+import type { StatusTone } from '@/shared/components/ui';
 import type { OrderStatus } from '../types/orders.types';
+
+/** Feeds the shared, generic `<StatusBadge>` — one status→color mapping used by every role (G9). */
+export const ORDER_STATUS_TONE: Record<OrderStatus, StatusTone> = {
+  PENDING: 'pending',
+  CONFIRMED: 'confirmed',
+  PREPARING: 'preparing',
+  READY_FOR_PICKUP: 'ready',
+  ON_THE_WAY: 'enroute',
+  DELIVERED: 'delivered',
+  CANCELLED: 'cancelled',
+};
 
 export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   PENDING: 'Chờ xác nhận',

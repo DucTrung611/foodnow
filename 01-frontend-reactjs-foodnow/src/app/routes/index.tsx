@@ -32,6 +32,8 @@ const OrderTrackingPage = lazy(() => import('@/features/delivery').then((m) => (
 const AdminOrdersPage = lazy(() => import('@/features/admin').then((m) => ({ default: m.AdminOrdersPage })));
 const AdminUsersPage = lazy(() => import('@/features/admin').then((m) => ({ default: m.AdminUsersPage })));
 
+const ShowcasePage = lazy(() => import('@/app/dev/ShowcasePage').then((m) => ({ default: m.ShowcasePage })));
+
 /** Layout-matching fallback, never a bare spinner on blank (PROJECT-RULES-FRONTEND.md §5). */
 function withSuspense(element: ReactElement): ReactNode {
   return (
@@ -49,6 +51,8 @@ export const router = createBrowserRouter([
     // both instead of falling through to the raw dev error screen.
     errorElement: <RouteErrorBoundary />,
     children: [
+      // No layout wrapper — a bare review surface for shared primitives, not a product page.
+      { path: ROUTES.devShowcase, element: withSuspense(<ShowcasePage />) },
       {
         element: <CustomerLayout />,
         children: [

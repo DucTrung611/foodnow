@@ -25,6 +25,9 @@ export const ROUTES = {
   adminRoot: '/admin',
   adminOrders: '/admin/orders',
   adminUsers: '/admin/users',
+
+  /** Dev-only design-system review surface — not linked from any nav. */
+  devShowcase: '/dev/showcase',
 } as const;
 
 /**

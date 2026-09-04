@@ -1,9 +1,12 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import { Spinner } from './Spinner';
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
+type ButtonSize = 'sm' | 'md' | 'lg';
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant;
+  size?: ButtonSize;
   isLoading?: boolean;
   children: ReactNode;
 };
@@ -15,16 +18,30 @@ const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   danger: 'bg-danger text-paper hover:bg-danger/90',
 };
 
-export function Button({ variant = 'primary', isLoading, disabled, className = '', children, ...props }: ButtonProps) {
+// Min height 44px at every size (G6: tap targets >= 44px), size only changes
+// horizontal padding/type scale, not the vertical hit area.
+const SIZE_CLASSES: Record<ButtonSize, string> = {
+  sm: 'min-h-11 px-3 text-body-sm',
+  md: 'min-h-11 px-4 text-body',
+  lg: 'min-h-12 px-6 text-body-lg',
+};
+
+export function Button({
+  variant = 'primary',
+  size = 'md',
+  isLoading,
+  disabled,
+  className = '',
+  children,
+  ...props
+}: ButtonProps) {
   return (
     <button
-      className={`inline-flex items-center justify-center gap-2 rounded-ticket px-4 py-2.5 font-sans font-medium text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${VARIANT_CLASSES[variant]} ${className}`}
+      className={`inline-flex items-center justify-center gap-2 rounded-ticket font-sans font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-paper disabled:cursor-not-allowed disabled:opacity-50 ${VARIANT_CLASSES[variant]} ${SIZE_CLASSES[size]} ${className}`}
       disabled={disabled || isLoading}
       {...props}
     >
-      {isLoading && (
-        <span className="size-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" aria-hidden />
-      )}
+      {isLoading && <Spinner size="sm" />}
       {children}
     </button>
   );

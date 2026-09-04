@@ -17,7 +17,8 @@ const VARIANT_CLASSES: Record<BadgeVariant, string> = {
 
 export function Badge({ variant = 'neutral', children }: BadgeProps) {
   return (
-    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 font-mono text-xs font-medium ${VARIANT_CLASSES[variant]}`}>
+    // Body face, not monospace — a badge is a label, not an identifier (G4).
+    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 font-sans text-caption ${VARIANT_CLASSES[variant]}`}>
       {children}
     </span>
   );

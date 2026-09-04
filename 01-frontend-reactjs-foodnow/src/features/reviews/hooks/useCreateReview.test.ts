@@ -61,7 +61,7 @@ describe('useCreateReview', () => {
     expect(invalidateSpy).not.toHaveBeenCalled();
   });
 
-  it('toasts a fallback message on REVIEW_7002 (already reviewed) without a false success', async () => {
+  it('toasts the mapped "already reviewed" message on REVIEW_7002 without a false success', async () => {
     server.use(
       http.post(`${BASE_URL}/orders/${ORDER_ID}/reviews`, () =>
         HttpResponse.json(
@@ -81,6 +81,6 @@ describe('useCreateReview', () => {
 
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(result.current.isSuccess).toBe(false);
-    expect(useNotificationStore.getState().toasts[0]?.message).toBe('Đã có lỗi xảy ra, vui lòng thử lại');
+    expect(useNotificationStore.getState().toasts[0]?.message).toBe('Đơn hàng này đã được đánh giá rồi');
   });
 });

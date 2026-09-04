@@ -18,6 +18,8 @@ const ERROR_MESSAGES: Record<string, string> = {
   PAYMENT_5001: 'Thanh toán bị từ chối',
   PAYMENT_5002: 'Giao dịch trùng lặp với dữ liệu khác',
   PROMO_6001: 'Mã khuyến mãi đã hết hạn hoặc hết lượt dùng',
+  REVIEW_7001: 'Đơn hàng chưa thể đánh giá (chỉ áp dụng cho đơn đã giao)',
+  REVIEW_7002: 'Đơn hàng này đã được đánh giá rồi',
 };
 
 export function mapErrorCode(code: string): string {

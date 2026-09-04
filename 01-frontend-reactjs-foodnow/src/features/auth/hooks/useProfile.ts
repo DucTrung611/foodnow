@@ -20,12 +20,17 @@ export const useUpdateProfile = () => {
   });
 };
 
-export const useAddresses = () => {
+/**
+ * `/users/me/addresses` is CUSTOMER-only server-side. Pages shared across
+ * roles (e.g. order detail, viewable by vendor/driver/admin too) must pass
+ * `enabled: isCustomer` to avoid firing a request that will 403 for everyone else.
+ */
+export const useAddresses = (options?: { enabled?: boolean }) => {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   return useQuery({
     queryKey: ['auth', 'addresses'],
     queryFn: usersService.listAddresses,
-    enabled: isAuthenticated,
+    enabled: isAuthenticated && (options?.enabled ?? true),
   });
 };
 

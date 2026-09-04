@@ -44,9 +44,9 @@ export function MenuItemOptionsModal({ item, open, isSubmitting, onClose, onConf
         {item.optionGroups.map((group) => (
           <fieldset key={group.id}>
             <legend className="mb-2 flex items-center gap-2">
-              <span className="font-display text-sm font-bold text-ink">{group.name}</span>
+              <span className="font-display text-body-lg font-semibold text-ink">{group.name}</span>
               {group.minSelect > 0 && <Badge variant="accent">Bắt buộc</Badge>}
-              {group.maxSelect > 1 && <span className="text-xs text-muted">chọn tối đa {group.maxSelect}</span>}
+              {group.maxSelect > 1 && <span className="text-caption text-muted">chọn tối đa {group.maxSelect}</span>}
             </legend>
             <div className="flex flex-col gap-1.5">
               {group.options.map((option) => {
@@ -54,7 +54,7 @@ export function MenuItemOptionsModal({ item, open, isSubmitting, onClose, onConf
                 return (
                   <label
                     key={option.id}
-                    className={`flex cursor-pointer items-center justify-between rounded-ticket border px-3 py-2 text-sm transition-colors ${
+                    className={`flex min-h-11 cursor-pointer items-center justify-between rounded-ticket border px-3 py-2 text-body transition-colors ${
                       checked ? 'border-primary bg-primary-bg' : 'border-muted-border'
                     }`}
                   >
@@ -64,12 +64,12 @@ export function MenuItemOptionsModal({ item, open, isSubmitting, onClose, onConf
                         name={group.id}
                         checked={checked}
                         onChange={() => toggleOption(group.id, option.id, group.maxSelect)}
-                        className="accent-primary"
+                        className="size-4 accent-primary"
                       />
                       {option.name}
                     </span>
                     {Number(option.extraPrice) > 0 && (
-                      <span className="font-mono text-xs text-ink">+{formatMoney(option.extraPrice)}</span>
+                      <span className="text-body-sm text-ink">+{formatMoney(option.extraPrice)}</span>
                     )}
                   </label>
                 );
@@ -79,21 +79,21 @@ export function MenuItemOptionsModal({ item, open, isSubmitting, onClose, onConf
         ))}
 
         <div className="flex items-center justify-between border-t border-muted-border pt-4">
-          <span className="text-sm font-medium text-ink">Số lượng</span>
-          <div className="flex items-center gap-2">
+          <span className="text-body font-medium text-ink">Số lượng</span>
+          <div className="flex items-center gap-1">
             <button
               type="button"
               onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-              className="size-7 rounded-ticket border border-muted-border text-ink hover:bg-primary-bg"
+              className="flex size-11 items-center justify-center rounded-ticket border border-muted-border text-ink hover:bg-primary-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
               aria-label="Giảm số lượng"
             >
               −
             </button>
-            <span className="w-5 text-center font-mono text-sm text-ink">{quantity}</span>
+            <span className="w-6 text-center text-body text-ink">{quantity}</span>
             <button
               type="button"
               onClick={() => setQuantity((q) => q + 1)}
-              className="size-7 rounded-ticket border border-muted-border text-ink hover:bg-primary-bg"
+              className="flex size-11 items-center justify-center rounded-ticket border border-muted-border text-ink hover:bg-primary-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
               aria-label="Tăng số lượng"
             >
               +
@@ -103,8 +103,8 @@ export function MenuItemOptionsModal({ item, open, isSubmitting, onClose, onConf
       </div>
 
       <div className="mt-5 flex items-center justify-between">
-        <span className="font-mono text-sm text-muted">Tổng</span>
-        <span className="font-mono text-lg font-bold text-ink">{formatMoney(unitPrice * quantity)}</span>
+        <span className="text-body-sm text-muted">Tổng</span>
+        <span className="text-body-lg font-bold text-ink">{formatMoney(unitPrice * quantity)}</span>
       </div>
 
       <Button

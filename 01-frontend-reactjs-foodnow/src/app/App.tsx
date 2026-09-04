@@ -13,7 +13,7 @@ function AppRouter() {
   if (!isReady) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-paper">
-        <span className="font-mono text-xs text-muted">Đang tải...</span>
+        <span className="text-body-sm text-muted">Đang tải...</span>
       </div>
     );
   }

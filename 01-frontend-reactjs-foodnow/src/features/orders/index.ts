@@ -5,6 +5,8 @@ export { VendorOrdersPage } from './pages/VendorOrdersPage';
 
 export { OrderCard } from './components/OrderCard';
 export { OrderStatusTimeline } from './components/OrderStatusTimeline';
+export { OrderItemsCard } from './components/OrderItemsCard';
+export { CancelOrderModal } from './components/CancelOrderModal';
 export { CartItemRow } from './components/CartItemRow';
 export { CartBadge } from './components/CartBadge';
 
@@ -22,7 +24,8 @@ export { useCartDraftStore } from './stores/cart.store';
 export { ordersService } from './services/orders.service';
 export { cartService } from './services/cart.service';
 
-export { ORDER_STATUS_LABELS, ORDER_STATUS_SEQUENCE, nextStatusInSequence } from './utils/order-status';
+export { ORDER_STATUS_LABELS, ORDER_STATUS_SEQUENCE, ORDER_STATUS_TONE, nextStatusInSequence } from './utils/order-status';
+export { calculateCartSubtotal } from './utils/cart-math';
 
 export type {
   Order,

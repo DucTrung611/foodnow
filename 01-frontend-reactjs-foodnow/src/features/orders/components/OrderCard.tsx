@@ -1,39 +1,35 @@
 import { Link } from 'react-router-dom';
-import { Badge } from '@/shared/components/ui';
+import { StatusBadge } from '@/shared/components/ui';
 import { formatMoney } from '@/shared/utils/money';
 import { formatRelativeTime } from '@/shared/utils/date';
+import { useRestaurant } from '@/features/restaurants';
 import { ROUTES } from '@/app/routes/routes.config';
-import { ORDER_STATUS_LABELS } from '../utils/order-status';
+import { ORDER_STATUS_LABELS, ORDER_STATUS_TONE } from '../utils/order-status';
 import type { Order } from '../types/orders.types';
-
-const STATUS_BADGE_VARIANT: Record<Order['status'], 'primary' | 'accent' | 'success' | 'danger' | 'neutral'> = {
-  PENDING: 'neutral',
-  CONFIRMED: 'accent',
-  PREPARING: 'accent',
-  READY_FOR_PICKUP: 'primary',
-  ON_THE_WAY: 'primary',
-  DELIVERED: 'success',
-  CANCELLED: 'danger',
-};
 
 type OrderCardProps = {
   order: Order;
 };
 
 export function OrderCard({ order }: OrderCardProps) {
+  const { data: restaurant } = useRestaurant(order.restaurantId);
+  const preview = order.items.map((i) => i.itemNameSnapshot).join(', ');
+
   return (
     <Link
       to={ROUTES.orderDetail(order.id)}
-      className="flex flex-col gap-2 rounded-ticket border border-muted-border bg-paper p-4 transition-shadow hover:shadow-md"
+      className="flex flex-col gap-2 rounded-card border border-muted-border bg-paper p-4 transition-shadow hover:shadow-float focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
     >
-      <div className="flex items-center justify-between">
-        <span className="font-mono text-xs text-muted">{order.orderCode}</span>
-        <Badge variant={STATUS_BADGE_VARIANT[order.status]}>{ORDER_STATUS_LABELS[order.status]}</Badge>
+      <div className="flex items-center justify-between gap-2">
+        <span className="truncate text-body font-medium text-ink">{restaurant?.name ?? order.orderCode}</span>
+        <StatusBadge tone={ORDER_STATUS_TONE[order.status]} label={ORDER_STATUS_LABELS[order.status]} />
       </div>
-      <p className="text-sm text-ink">
-        {order.items.length} món · <span className="font-mono">{formatMoney(order.totalAmount)}</span>
-      </p>
-      <span className="text-xs text-muted">{formatRelativeTime(order.placedAt)}</span>
+      <p className="truncate text-body-sm text-muted">{preview}</p>
+      <div className="flex items-center justify-between">
+        <span className="font-mono text-mono-code text-muted">{order.orderCode}</span>
+        <span className="text-body-sm font-medium text-ink">{formatMoney(order.totalAmount)}</span>
+      </div>
+      <span className="text-caption text-muted">{formatRelativeTime(order.placedAt)}</span>
     </Link>
   );
 }

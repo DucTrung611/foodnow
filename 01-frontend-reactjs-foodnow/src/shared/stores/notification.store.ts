@@ -1,6 +1,7 @@
 import { create } from 'zustand';
+import type { ToastVariant } from '@/shared/components/ui/Toast';
 
-export type ToastVariant = 'success' | 'error' | 'info';
+export type { ToastVariant };
 
 export type Toast = {
   id: string;

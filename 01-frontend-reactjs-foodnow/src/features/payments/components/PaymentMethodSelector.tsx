@@ -17,12 +17,18 @@ export function PaymentMethodSelector({ value, onChange }: PaymentMethodSelector
       {METHODS.map((method) => (
         <label
           key={method.value}
-          className={`flex cursor-pointer items-center gap-3 rounded-ticket border p-3 ${
+          className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-ticket border p-3 ${
             value === method.value ? 'border-primary' : 'border-muted-border'
           }`}
         >
-          <input type="radio" name="payment-method" checked={value === method.value} onChange={() => onChange(method.value)} />
-          <span className="text-sm text-ink">{method.label}</span>
+          <input
+            type="radio"
+            name="payment-method"
+            className="size-4 accent-primary"
+            checked={value === method.value}
+            onChange={() => onChange(method.value)}
+          />
+          <span className="text-body text-ink">{method.label}</span>
         </label>
       ))}
     </div>

@@ -13,8 +13,8 @@ export function PayOrderPanel({ orderId }: PayOrderPanelProps) {
   const payOrder = usePayOrder(orderId);
 
   return (
-    <div className="rounded-ticket border border-muted-border p-4">
-      <h2 className="font-display text-base font-bold text-ink">Thanh toán</h2>
+    <div className="rounded-card border border-muted-border p-4">
+      <h2 className="font-display text-display-md text-ink">Thanh toán</h2>
       <div className="mt-3">
         <PaymentMethodSelector value={method} onChange={setMethod} />
       </div>
